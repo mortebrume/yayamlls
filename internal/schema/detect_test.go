@@ -9,12 +9,12 @@ func TestDetectKubernetesGVK(t *testing.T) {
 		{
 			name: "core pod",
 			in:   "apiVersion: v1\nkind: Pod\nmetadata:\n  name: x\n",
-			want: DefaultK8sSchemaBase + "/pod-v1.json",
+			want: "https://k8s-schemas.home-operations.com/pod_v1.json",
 		},
 		{
 			name: "grouped deployment",
 			in:   "apiVersion: apps/v1\nkind: Deployment\n",
-			want: DefaultK8sSchemaBase + "/deployment-apps-v1.json",
+			want: "https://k8s-schemas.home-operations.com/apps/deployment_v1.json",
 		},
 		{
 			name: "missing kind",

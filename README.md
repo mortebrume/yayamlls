@@ -4,10 +4,18 @@ YAML language server in Go. Schema-driven diagnostics, completion, and
 hover; pluggable rendering for Flux `HelmRelease` and `Kustomization`
 sources via [home-operations/flate][flate].
 
-Schema resolution per document — modeline →
-workspace settings glob → Kubernetes `apiVersion`+`kind` auto-detect →
-JSON Schema Store catalog. Multi-doc YAML files validate each document
-against its own schema.
+Per-document schema resolution, highest priority first:
+
+1. in-file modeline (`# yaml-language-server: $schema=…`)
+2. workspace `schemas:` glob in `.yamlls.yaml`
+3. JSON Schema Store catalog (filename match)
+4. Kubernetes `apiVersion`+`kind` → `kubernetes.schemaUrl` template
+
+Multi-doc YAML files validate each document against its own schema. The
+`kubernetes.schemaUrl` template defaults to
+`https://k8s-schemas.home-operations.com/{groupSeg}{kindLower}_{versionLower}.json` —
+override it in `.yamlls.yaml` to point at any other mirror. URLs that
+404 are silently skipped (negative-cached 5 minutes).
 
 ## Install
 

@@ -20,6 +20,15 @@ func TestMultiDocMixedKinds(t *testing.T) {
 	bin := buildBinary(t)
 
 	root := t.TempDir()
+	// Pin the K8s schema template to yannh so the test doesn't depend on
+	// the default mirror hosting Deployment+Service+Namespace.
+	cfg := `kubernetes:
+  schemaUrl: "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/master-standalone-strict/{kindLower}-{groupFirstSeg}{version}.json"
+catalog: false
+`
+	if err := os.WriteFile(filepath.Join(root, ".yamlls.yaml"), []byte(cfg), 0o644); err != nil {
+		t.Fatal(err)
+	}
 	docPath := filepath.Join(root, "manifests.yaml")
 	body := `---
 apiVersion: v1

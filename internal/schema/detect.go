@@ -37,8 +37,9 @@ func DetectGVK(body ast.Node) (GVK, bool) {
 	return GVK{Group: group, Version: version, Kind: head.Kind}, true
 }
 
-// DetectKubernetesGVK reads the first YAML document's apiVersion+kind
-// and returns the matching yannh/kubernetes-json-schema URL.
+// DetectKubernetesGVK extracts the GVK from the first document and
+// returns the default-template URL. Use Resolver.K8sURLForNode when a
+// user-configured template should apply.
 func DetectKubernetesGVK(text string) string {
 	f, err := parser.ParseBytes([]byte(text), 0)
 	if err != nil || f == nil || len(f.Docs) == 0 {
@@ -53,7 +54,7 @@ func DetectKubernetesGVKFromNode(body ast.Node) string {
 	if !ok {
 		return ""
 	}
-	return KubernetesSchemaURL(gvk.Group, gvk.Version, gvk.Kind)
+	return BuildK8sURL("", gvk.Group, gvk.Version, gvk.Kind)
 }
 
 func splitOnce(s string, sep byte) (string, string) {
