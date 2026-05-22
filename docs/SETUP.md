@@ -1,6 +1,9 @@
 # Editor setup
 
-`yamlls` speaks LSP 3.16 over stdio.
+`yamlls` speaks LSP 3.16 over stdio. The binary needs to be on `$PATH`
+(or point your client at an absolute path). Workspace-wide configuration
+goes in `.yamlls.yaml` at the repo root — see the [README](../README.md)
+for the schema.
 
 ## Neovim (nvim-lspconfig)
 
@@ -37,7 +40,7 @@ Minimal extension:
 ```
 
 ```js
-// extension.js
+// extension.js  (vscode-languageclient v9+)
 const { LanguageClient } = require("vscode-languageclient/node");
 
 let client;
@@ -48,9 +51,10 @@ exports.activate = function (ctx) {
     { command: "yamlls" },
     { documentSelector: [{ scheme: "file", language: "yaml" }] }
   );
-  ctx.subscriptions.push(client.start());
+  client.start();              // returns Promise<void>, fire-and-forget
+  ctx.subscriptions.push(client);
 };
-exports.deactivate = () => client && client.stop();
+exports.deactivate = () => client?.stop();
 ```
 
 ## Helix
@@ -111,3 +115,12 @@ vim.lsp.buf.execute_command({
   arguments = { vim.uri_from_bufnr(0) },
 })
 ```
+
+## Debugging
+
+```sh
+yamlls --log-file /tmp/yamlls.log -v 2
+```
+
+Tail `/tmp/yamlls.log` to see what the server sees. Verbosity 0 is
+silent (default), 1 is info, 2+ is debug.

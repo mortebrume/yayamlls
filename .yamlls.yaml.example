@@ -7,7 +7,7 @@ schemas:
     - "k8s/**/*.yaml"
 
 catalog: true
-catalogUrl: ""
+# catalogUrl: ""   # override the schemastore.org endpoint
 
 # kubernetes.schemaUrl overrides the URL template used by apiVersion+kind
 # auto-detect. Placeholders: {group}, {groupSeg}, {groupFirst}, {kind},
@@ -16,7 +16,9 @@ catalogUrl: ""
 # kubernetes:
 #   schemaUrl: "https://schemas.example.com/{groupSeg}{kindLower}_{versionLower}.json"
 
-renderers:
-  flate:
-    enabled: true
-    binary: flate
+# Per-renderer config. Defaults shown — only set when overriding.
+#
+# renderers:
+#   flate:
+#     enabled: true
+#     binary: flate

@@ -4,6 +4,11 @@ YAML language server in Go. Schema-driven diagnostics, completion, and
 hover; pluggable rendering for Flux `HelmRelease` and `Kustomization`
 sources via [home-operations/flate][flate].
 
+Schema resolution per document — modeline →
+workspace settings glob → Kubernetes `apiVersion`+`kind` auto-detect →
+JSON Schema Store catalog. Multi-doc YAML files validate each document
+against its own schema.
+
 ## Install
 
 ```sh
@@ -34,17 +39,20 @@ schemas:
 catalog: true
 catalogUrl: ""
 
-# Override the URL template used by Kubernetes apiVersion+kind auto-detect.
+# Optional. Override the URL template used by Kubernetes auto-detect.
 # Placeholders: {group}, {groupSeg}, {groupFirst}, {kind}, {kindLower},
 # {version}, {versionLower}. Unset = yannh/kubernetes-json-schema layout.
-kubernetes:
-  schemaUrl: "https://schemas.example.com/{groupSeg}{kindLower}_{versionLower}.json"
+# kubernetes:
+#   schemaUrl: "https://schemas.example.com/{groupSeg}{kindLower}_{versionLower}.json"
 
-renderers:
-  flate:
-    enabled: true
-    binary: flate
+# Optional. Defaults shown.
+# renderers:
+#   flate:
+#     enabled: true
+#     binary: flate
 ```
+
+See [`.yamlls.yaml.example`](.yamlls.yaml.example) for a copyable starter.
 
 Same shape works via `initializationOptions` or
 `workspace/didChangeConfiguration`. Precedence (low → high):
@@ -54,6 +62,14 @@ Same shape works via `initializationOptions` or
 
 - `yamlls.showRendered` — returns the renderer's output for a
   `HelmRelease`/`Kustomization` URI.
+
+## CLI flags
+
+```
+yamlls --version              print version and exit
+yamlls --log-file PATH        append logs to PATH instead of stderr
+yamlls -v N                   log verbosity (0=silent, 1=info, 2+=debug)
+```
 
 ## Development
 
