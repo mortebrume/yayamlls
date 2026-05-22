@@ -12,9 +12,8 @@ import (
 	_ "github.com/santhosh-tekuri/jsonschema/v5/httploader"
 )
 
-// negativeTTL is how long we remember a failed compile before retrying.
-// Kubernetes CRDs that aren't in yannh/kubernetes-json-schema would
-// otherwise cause one network round-trip per keystroke.
+// negativeTTL keeps CRDs missing from the configured mirror from causing
+// one network round-trip per keystroke.
 const negativeTTL = 5 * time.Minute
 
 type Store struct {

@@ -13,15 +13,11 @@ import (
 	"time"
 )
 
-// TestMultiDocMixedKinds opens a file with a Namespace, a broken
-// Deployment, and a Service. Each document must validate against its own
-// Kubernetes schema; only the broken Deployment should produce a diagnostic.
 func TestMultiDocMixedKinds(t *testing.T) {
 	bin := buildBinary(t)
 
 	root := t.TempDir()
-	// Pin the K8s schema template to yannh so the test doesn't depend on
-	// the default mirror hosting Deployment+Service+Namespace.
+	// Pin yannh so the test doesn't depend on what the default mirror hosts.
 	cfg := `kubernetes:
   schemaUrl: "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/master-standalone-strict/{kindLower}-{groupFirstSeg}{version}.json"
 catalog: false

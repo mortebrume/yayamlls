@@ -31,8 +31,6 @@ func TestBuildK8sURL_TemplatePlaceholders(t *testing.T) {
 }
 
 func TestBuildK8sURL_YannhLayoutViaTemplate(t *testing.T) {
-	// Users wanting yannh/kubernetes-json-schema can express it with the
-	// {groupFirstSeg} placeholder.
 	tmpl := "https://yannh.example/{kindLower}-{groupFirstSeg}{version}.json"
 	if got := BuildK8sURL(tmpl, "", "v1", "Pod"); got != "https://yannh.example/pod-v1.json" {
 		t.Errorf("core: got %q", got)
@@ -51,8 +49,6 @@ func TestBuildK8sURL_EmptyWhenMissingFields(t *testing.T) {
 	}
 }
 
-// Sanity: the placeholders we document in the README never accidentally
-// leak through unsubstituted.
 func TestBuildK8sURL_AllPlaceholdersResolve(t *testing.T) {
 	tmpl := "{group}|{groupSeg}|{groupFirst}|{groupFirstSeg}|{kind}|{kindLower}|{version}|{versionLower}"
 	got := BuildK8sURL(tmpl, "apps.k8s.io", "v1beta1", "Deployment")

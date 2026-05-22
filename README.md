@@ -11,11 +11,10 @@ Per-document schema resolution, highest priority first:
 3. JSON Schema Store catalog (filename match)
 4. Kubernetes `apiVersion`+`kind` → `kubernetes.schemaUrl` template
 
-Multi-doc YAML files validate each document against its own schema. The
-`kubernetes.schemaUrl` template defaults to
-`https://k8s-schemas.home-operations.com/{groupSeg}{kindLower}_{versionLower}.json` —
-override it in `.yamlls.yaml` to point at any other mirror. URLs that
-404 are silently skipped (negative-cached 5 minutes).
+Multi-doc files validate each document against its own schema. The
+default `kubernetes.schemaUrl` is
+`https://k8s-schemas.home-operations.com/{groupSeg}{kindLower}_{versionLower}.json`;
+override in `.yamlls.yaml` to point elsewhere. 404s are silently skipped.
 
 ## Install
 
@@ -47,9 +46,9 @@ schemas:
 catalog: true
 catalogUrl: ""
 
-# Optional. Override the URL template used by Kubernetes auto-detect.
-# Placeholders: {group}, {groupSeg}, {groupFirst}, {kind}, {kindLower},
-# {version}, {versionLower}. Unset = yannh/kubernetes-json-schema layout.
+# Optional. Override the URL template for Kubernetes auto-detect.
+# Placeholders: {group}, {groupSeg}, {groupFirst}, {groupFirstSeg},
+# {kind}, {kindLower}, {version}, {versionLower}.
 # kubernetes:
 #   schemaUrl: "https://schemas.example.com/{groupSeg}{kindLower}_{versionLower}.json"
 

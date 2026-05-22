@@ -226,10 +226,9 @@ func (s *Server) publishWith(notify glsp.NotifyFunc, d *document.Document) {
 		diags = append(diags, diagnostics.ParseErrorDiagnostic(parsed.Err))
 	}
 
-	// We only surface schema-load failures for FILE-level refs (user
-	// intent: modeline, settings glob, catalog). Per-document K8s
-	// auto-detect is best-effort — CRDs without an online schema would
-	// otherwise spam a warning on every publish.
+	// Load failures surface only for file-level refs (modeline, glob,
+	// catalog) — per-doc auto-detect would otherwise warn on every CRD
+	// missing from the configured mirror.
 	loadFailures := make(map[string]bool)
 	for _, doc := range parsed.Docs() {
 		ref := fileRef

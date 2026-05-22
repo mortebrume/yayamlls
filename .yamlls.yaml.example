@@ -9,9 +9,9 @@ schemas:
 catalog: true
 # catalogUrl: ""   # override the schemastore.org endpoint
 
-# kubernetes.schemaUrl overrides the URL template used by apiVersion+kind
-# auto-detect. Placeholders: {group}, {groupSeg}, {groupFirst}, {kind},
-# {kindLower}, {version}, {versionLower}. Defaults to the yannh layout.
+# Override the Kubernetes auto-detect URL template. Placeholders:
+# {group}, {groupSeg}, {groupFirst}, {groupFirstSeg}, {kind}, {kindLower},
+# {version}, {versionLower}.
 #
 # kubernetes:
 #   schemaUrl: "https://schemas.example.com/{groupSeg}{kindLower}_{versionLower}.json"

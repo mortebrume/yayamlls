@@ -40,10 +40,8 @@ func (s *Server) didClose(ctx *glsp.Context, params *protocol.DidCloseTextDocume
 	return nil
 }
 
-// schemaAtCursor resolves the schema that applies to the document the
-// cursor is inside. For multi-doc files this may differ per doc (e.g. a
-// Namespace and a Deployment in the same file resolve to different
-// Kubernetes schemas).
+// schemaAtCursor resolves the schema for the doc the cursor is inside,
+// which can differ per doc in multi-doc files.
 func (s *Server) schemaAtCursor(uri string, pos protocol.Position) *jsonschema.Schema {
 	d, ok := s.docs.Get(uri)
 	if !ok {

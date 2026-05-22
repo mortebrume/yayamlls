@@ -12,9 +12,8 @@ import (
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )
 
-// renderDiagnostics emits file-level diagnostics for a rendered output:
-// rendered manifests have no source line, so we embed the rendered
-// location (kind/name @ jsonptr) in the message instead.
+// renderDiagnostics validates rendered manifests; rendered docs have no
+// source line, so the kind/name/jsonptr is embedded in each message.
 func renderDiagnostics(store *schema.Store, resolver *schema.Resolver, out *render.RenderedOutput, err error) []protocol.Diagnostic {
 	if err != nil {
 		return []protocol.Diagnostic{{
@@ -35,9 +34,6 @@ func renderDiagnostics(store *schema.Store, resolver *schema.Resolver, out *rend
 		}
 		sch, err := store.Get(url, "")
 		if err != nil {
-			// Schema isn't online (common for CRDs missing from the
-			// configured mirror). Skip silently — the negative cache in
-			// the Store stops the network spam.
 			continue
 		}
 		value, err := yamlast.Decode(m.AST)

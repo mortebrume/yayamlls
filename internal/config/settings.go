@@ -10,20 +10,9 @@ type Settings struct {
 	Renderers  map[string]json.RawMessage `json:"renderers,omitempty"`
 }
 
-// KubernetesSettings tunes the per-document apiVersion+kind auto-detect.
 type KubernetesSettings struct {
-	// SchemaURL is the URL template applied to detected GVKs. Supported
-	// placeholders:
-	//
-	//   {group}         — full api group, "" for core (e.g. "apps", "")
-	//   {groupSeg}      — "<group>/" when non-empty, "" otherwise
-	//   {groupFirst}    — first DNS label of the group ("apps" from "apps.k8s.io")
-	//   {kind}          — kind in original case (e.g. "HelmRelease")
-	//   {kindLower}     — kind lowercased (e.g. "helmrelease")
-	//   {version}       — version (e.g. "v2", "v1beta1")
-	//   {versionLower}  — version lowercased
-	//
-	// When unset, the built-in yannh/kubernetes-json-schema layout is used.
+	// SchemaURL templates per-document apiVersion+kind auto-detect.
+	// See schema.BuildK8sURL for supported placeholders.
 	SchemaURL string `json:"schemaUrl,omitempty"`
 }
 

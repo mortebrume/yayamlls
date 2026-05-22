@@ -9,11 +9,10 @@ import (
 	"github.com/home-operations/yamlls/internal/config"
 )
 
-// Resolver picks the FILE-LEVEL schema URL for a document. Order:
-// modeline, workspace settings glob, JSON Schema Store catalog.
-// Kubernetes apiVersion+kind auto-detection is per-document and lives
-// in DetectKubernetesGVKFromNode — callers handle that themselves so
-// multi-doc files with mixed kinds resolve correctly.
+// Resolver picks the file-level schema URL for a document: modeline,
+// workspace `schemas:` glob, JSON Schema Store catalog. Kubernetes
+// apiVersion+kind detection is per-document and lives on K8sURLForNode
+// so multi-doc files with mixed kinds resolve correctly.
 type Resolver struct {
 	mu       sync.RWMutex
 	settings config.Settings
@@ -87,9 +86,8 @@ func startsAnchored(g string) bool {
 	return len(g) > 0 && (g[0] == '/' || (len(g) >= 2 && g[0] == '*' && g[1] == '*'))
 }
 
-// K8sURLForNode runs apiVersion+kind detection on the given document body
-// and renders the configured kubernetes.schemaUrl template (yannh default).
-// Returns "" when the document isn't a Kubernetes manifest.
+// K8sURLForNode renders the configured template for the apiVersion+kind
+// found in body, or "" when the document isn't a Kubernetes manifest.
 func (r *Resolver) K8sURLForNode(body ast.Node) string {
 	gvk, ok := DetectGVK(body)
 	if !ok {
@@ -98,8 +96,6 @@ func (r *Resolver) K8sURLForNode(body ast.Node) string {
 	return r.K8sURL(gvk)
 }
 
-// K8sURL renders the configured URL template for an already-parsed GVK.
-// Used by the renderer pipeline where the GVK is known up-front.
 func (r *Resolver) K8sURL(gvk GVK) string {
 	r.mu.RLock()
 	tmpl := ""

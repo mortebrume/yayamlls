@@ -1,36 +1,38 @@
 package schema
 
-import "testing"
+import (
+	"testing"
 
-func TestDetectKubernetesGVK(t *testing.T) {
+	"github.com/goccy/go-yaml/parser"
+)
+
+func TestDetectGVK(t *testing.T) {
 	cases := []struct {
-		name, in, want string
+		name, in           string
+		wantGroup, wantVer string
+		wantKind           string
+		wantOk             bool
 	}{
-		{
-			name: "core pod",
-			in:   "apiVersion: v1\nkind: Pod\nmetadata:\n  name: x\n",
-			want: "https://k8s-schemas.home-operations.com/pod_v1.json",
-		},
-		{
-			name: "grouped deployment",
-			in:   "apiVersion: apps/v1\nkind: Deployment\n",
-			want: "https://k8s-schemas.home-operations.com/apps/deployment_v1.json",
-		},
-		{
-			name: "missing kind",
-			in:   "apiVersion: v1\nname: noisy\n",
-			want: "",
-		},
-		{
-			name: "non-k8s doc",
-			in:   "name: Alice\nage: 30\n",
-			want: "",
-		},
+		{"core pod", "apiVersion: v1\nkind: Pod\n", "", "v1", "Pod", true},
+		{"grouped deployment", "apiVersion: apps/v1\nkind: Deployment\n", "apps", "v1", "Deployment", true},
+		{"missing kind", "apiVersion: v1\nname: noisy\n", "", "", "", false},
+		{"non-k8s doc", "name: Alice\nage: 30\n", "", "", "", false},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			if got := DetectKubernetesGVK(c.in); got != c.want {
-				t.Errorf("got %q, want %q", got, c.want)
+			f, err := parser.ParseBytes([]byte(c.in), 0)
+			if err != nil {
+				t.Fatalf("parse: %v", err)
+			}
+			gvk, ok := DetectGVK(f.Docs[0].Body)
+			if ok != c.wantOk {
+				t.Fatalf("ok = %v, want %v", ok, c.wantOk)
+			}
+			if !ok {
+				return
+			}
+			if gvk.Group != c.wantGroup || gvk.Version != c.wantVer || gvk.Kind != c.wantKind {
+				t.Errorf("got %+v, want {%q %q %q}", gvk, c.wantGroup, c.wantVer, c.wantKind)
 			}
 		})
 	}

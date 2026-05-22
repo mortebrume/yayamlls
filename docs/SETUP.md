@@ -1,9 +1,8 @@
 # Editor setup
 
-`yamlls` speaks LSP 3.16 over stdio. The binary needs to be on `$PATH`
-(or point your client at an absolute path). Workspace-wide configuration
-goes in `.yamlls.yaml` at the repo root — see the [README](../README.md)
-for the schema.
+`yamlls` speaks LSP 3.16 over stdio. Put the binary on `$PATH` or pass
+an absolute path. Workspace config: `.yamlls.yaml` at the repo root
+(see the [README](../README.md)).
 
 ## Neovim (nvim-lspconfig)
 
@@ -71,11 +70,9 @@ language-servers = ["yamlls"]
 
 ## Zed
 
-Zed's `lsp` key only accepts the names of language servers it knows about,
-so `yamlls` won't work as a top-level key (you'll see
-`Property yamlls is not allowed`). Instead, override the binary of Zed's
-bundled `yaml-language-server` so our binary runs in its place — yamlls
-speaks vanilla LSP and behaves as a drop-in:
+Zed's `lsp` key only accepts known language-server identifiers, so
+`yamlls` as a top-level key triggers `Property yamlls is not allowed`.
+Override Zed's bundled `yaml-language-server` binary instead:
 
 ```jsonc
 // ~/.config/zed/settings.json
@@ -94,8 +91,6 @@ speaks vanilla LSP and behaves as a drop-in:
 }
 ```
 
-Workspace config still belongs in `.yamlls.yaml` at the repo root.
-
 ## Flux rendering
 
 Install flate:
@@ -104,10 +99,10 @@ Install flate:
 go install github.com/home-operations/flate/cmd/flate@latest
 ```
 
-Open a `HelmRelease` or `Kustomization`. Diagnostics on the source
-document carry `[rendered <kind>/<name> @ <jsonptr>]` for schema
-violations on the rendered manifests. The `yamlls.showRendered` command
-returns the rendered YAML; in Neovim:
+Open a `HelmRelease` or `Kustomization`. Schema violations on rendered
+manifests are surfaced on the source document as
+`[rendered <kind>/<name> @ <jsonptr>]`. The `yamlls.showRendered`
+command returns the rendered YAML; in Neovim:
 
 ```lua
 vim.lsp.buf.execute_command({
@@ -122,5 +117,4 @@ vim.lsp.buf.execute_command({
 yamlls --log-file /tmp/yamlls.log -v 2
 ```
 
-Tail `/tmp/yamlls.log` to see what the server sees. Verbosity 0 is
-silent (default), 1 is info, 2+ is debug.
+`-v 0` is silent (default), `1` is info, `2+` is debug.
