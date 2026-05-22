@@ -54,6 +54,9 @@ func (r *Resolver) Resolve(text, docPath string) string {
 	if ref := matchSettings(r.settings.Schemas, docPath); ref != "" {
 		return ref
 	}
+	if isYamllsConfigPath(docPath) {
+		return EmbeddedYamllsSchemaURL
+	}
 	if r.catalog != nil {
 		if ref := r.catalog.Match(docPath); ref != "" {
 			return ref

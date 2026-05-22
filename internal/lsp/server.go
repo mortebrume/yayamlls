@@ -25,9 +25,10 @@ type Server struct {
 	handler  *protocol.Handler
 	version  string
 
-	rendMu        sync.Mutex
-	renderedDiags map[string][]protocol.Diagnostic
-	renderedRaw   map[string][]byte
+	rendMu           sync.Mutex
+	renderedDiags    map[string][]protocol.Diagnostic
+	renderedRaw      map[string][]byte
+	renderedBaseline map[string][]byte // first successful render per URI; cleared on didClose
 
 	// connNotify is captured lazily from the first incoming request so the
 	// async render pipeline can push diagnostics without holding onto a
@@ -45,13 +46,14 @@ func New(version string, registry *render.Registry) *Server {
 		registry = render.NewRegistry()
 	}
 	s := &Server{
-		docs:          document.NewStore(),
-		schemas:       schema.NewStore(),
-		resolver:      schema.NewResolver(),
-		renderer:      registry,
-		renderedDiags: make(map[string][]protocol.Diagnostic),
-		renderedRaw:   make(map[string][]byte),
-		version:       version,
+		docs:             document.NewStore(),
+		schemas:          schema.NewStore(),
+		resolver:         schema.NewResolver(),
+		renderer:         registry,
+		renderedDiags:    make(map[string][]protocol.Diagnostic),
+		renderedRaw:      make(map[string][]byte),
+		renderedBaseline: make(map[string][]byte),
+		version:          version,
 	}
 	s.pipeline = render.NewPipeline(registry, s)
 	s.handler = &protocol.Handler{
@@ -69,6 +71,8 @@ func New(version string, registry *render.Registry) *Server {
 		TextDocumentFoldingRange:   s.foldingRange,
 		TextDocumentDocumentLink:   s.documentLink,
 		TextDocumentDocumentSymbol: s.documentSymbol,
+		TextDocumentCodeAction:     s.codeAction,
+		TextDocumentCodeLens:       s.codeLens,
 
 		WorkspaceDidChangeConfiguration:    s.didChangeConfig,
 		WorkspaceDidChangeWorkspaceFolders: s.didChangeWorkspaceFolders,
@@ -87,7 +91,7 @@ func (s *Server) initialize(ctx *glsp.Context, params *protocol.InitializeParams
 		Change:    &change,
 	}
 	caps.ExecuteCommandProvider = &protocol.ExecuteCommandOptions{
-		Commands: []string{CommandShowRendered},
+		Commands: []string{CommandShowRendered, CommandShowRenderedDiff},
 	}
 
 	root := pickWorkspaceRoot(params)
@@ -206,6 +210,10 @@ func (s *Server) Notify(uri string, out *render.RenderedOutput, err error) {
 	s.renderedDiags[uri] = diags
 	if out != nil {
 		s.renderedRaw[uri] = out.Raw
+		if _, ok := s.renderedBaseline[uri]; !ok {
+			// Capture the first successful render as the diff baseline.
+			s.renderedBaseline[uri] = append([]byte(nil), out.Raw...)
+		}
 	}
 	s.rendMu.Unlock()
 
@@ -291,4 +299,18 @@ func (s *Server) renderedRawFor(uri string) []byte {
 	s.rendMu.Lock()
 	defer s.rendMu.Unlock()
 	return s.renderedRaw[uri]
+}
+
+func (s *Server) renderedBaselineFor(uri string) []byte {
+	s.rendMu.Lock()
+	defer s.rendMu.Unlock()
+	return s.renderedBaseline[uri]
+}
+
+func (s *Server) clearRenderState(uri string) {
+	s.rendMu.Lock()
+	delete(s.renderedDiags, uri)
+	delete(s.renderedRaw, uri)
+	delete(s.renderedBaseline, uri)
+	s.rendMu.Unlock()
 }

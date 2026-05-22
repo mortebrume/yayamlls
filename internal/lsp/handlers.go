@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"net/url"
 
+	"github.com/home-operations/yamlls/internal/actions"
 	"github.com/home-operations/yamlls/internal/completion"
 	"github.com/home-operations/yamlls/internal/config"
 	"github.com/home-operations/yamlls/internal/diagnostics"
 	"github.com/home-operations/yamlls/internal/document"
 	"github.com/home-operations/yamlls/internal/folding"
 	"github.com/home-operations/yamlls/internal/hover"
+	"github.com/home-operations/yamlls/internal/lens"
 	"github.com/home-operations/yamlls/internal/links"
 	"github.com/home-operations/yamlls/internal/render"
 	"github.com/home-operations/yamlls/internal/symbols"
@@ -19,7 +21,10 @@ import (
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )
 
-const CommandShowRendered = "yamlls.showRendered"
+const (
+	CommandShowRendered     = "yamlls.showRendered"
+	CommandShowRenderedDiff = "yamlls.showRenderedDiff"
+)
 
 func (s *Server) didOpen(ctx *glsp.Context, params *protocol.DidOpenTextDocumentParams) error {
 	td := params.TextDocument
@@ -39,8 +44,10 @@ func (s *Server) didChange(ctx *glsp.Context, params *protocol.DidChangeTextDocu
 }
 
 func (s *Server) didClose(ctx *glsp.Context, params *protocol.DidCloseTextDocumentParams) error {
-	s.clearDiagnostics(ctx, params.TextDocument.URI)
-	s.docs.Close(params.TextDocument.URI)
+	uri := params.TextDocument.URI
+	s.clearDiagnostics(ctx, uri)
+	s.docs.Close(uri)
+	s.clearRenderState(uri)
 	return nil
 }
 
@@ -122,28 +129,68 @@ func (s *Server) documentSymbol(ctx *glsp.Context, params *protocol.DocumentSymb
 	return symbols.Outline(d.Text), nil
 }
 
+func (s *Server) codeAction(ctx *glsp.Context, params *protocol.CodeActionParams) (any, error) {
+	uri := params.TextDocument.URI
+	if _, ok := s.docs.Get(uri); !ok {
+		return nil, nil
+	}
+	sch := s.schemaAtCursor(uri, params.Range.Start)
+	return actions.Compute(uri, sch, params.Context.Diagnostics), nil
+}
+
+func (s *Server) codeLens(ctx *glsp.Context, params *protocol.CodeLensParams) ([]protocol.CodeLens, error) {
+	d, ok := s.docs.Get(params.TextDocument.URI)
+	if !ok {
+		return nil, nil
+	}
+	return lens.Lenses(d.URI, d.Text), nil
+}
+
 func (s *Server) executeCommand(ctx *glsp.Context, params *protocol.ExecuteCommandParams) (any, error) {
 	switch params.Command {
 	case CommandShowRendered:
-		if len(params.Arguments) == 0 {
-			return nil, nil
-		}
-		uri, _ := params.Arguments[0].(string)
+		uri := commandURIArg(params)
 		if uri == "" {
 			return nil, nil
 		}
 		raw := s.renderedRawFor(uri)
 		if len(raw) == 0 {
-			if d, ok := s.docs.Get(uri); ok {
-				if src := render.AnalyzeDocument(d.URI, uriToPath(d.URI), d.Text); src != nil {
-					s.pipeline.Schedule(src)
-				}
-			}
+			s.scheduleRenderForURI(uri)
 			return map[string]any{"yaml": ""}, nil
 		}
 		return map[string]any{"yaml": string(raw)}, nil
+	case CommandShowRenderedDiff:
+		uri := commandURIArg(params)
+		if uri == "" {
+			return nil, nil
+		}
+		baseline := s.renderedBaselineFor(uri)
+		current := s.renderedRawFor(uri)
+		if len(current) == 0 {
+			s.scheduleRenderForURI(uri)
+			return map[string]any{"diff": ""}, nil
+		}
+		return map[string]any{"diff": unifiedDiff(uri, baseline, current)}, nil
 	}
 	return nil, nil
+}
+
+func commandURIArg(params *protocol.ExecuteCommandParams) string {
+	if len(params.Arguments) == 0 {
+		return ""
+	}
+	uri, _ := params.Arguments[0].(string)
+	return uri
+}
+
+func (s *Server) scheduleRenderForURI(uri string) {
+	d, ok := s.docs.Get(uri)
+	if !ok {
+		return
+	}
+	if src := render.AnalyzeDocument(d.URI, uriToPath(d.URI), d.Text); src != nil {
+		s.pipeline.Schedule(src)
+	}
 }
 
 func (s *Server) didChangeWorkspaceFolders(ctx *glsp.Context, params *protocol.DidChangeWorkspaceFoldersParams) error {

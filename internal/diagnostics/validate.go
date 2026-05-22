@@ -70,6 +70,14 @@ func validateDoc(doc *ast.DocumentNode, sch *jsonschema.Schema) []protocol.Diagn
 	return nil
 }
 
+// CauseData is the structured payload attached to each diagnostic's Data
+// field so the code-action handler can produce quick-fixes without
+// re-validating the document.
+type CauseData struct {
+	Kind             string `json:"kind"`             // "enum", "required", "additionalProperties", "type", ...
+	InstanceLocation string `json:"instanceLocation"` // JSON Pointer into the source document
+}
+
 // flattenValidationError emits one diagnostic per leaf cause — leaves
 // carry the actionable message; root nodes are generic wrappers.
 func flattenValidationError(doc *ast.DocumentNode, verr *jsonschema.ValidationError) []protocol.Diagnostic {
@@ -82,6 +90,7 @@ func flattenValidationError(doc *ast.DocumentNode, verr *jsonschema.ValidationEr
 				Source:   ptr(Source),
 				Message:  fmt.Sprintf("%s (at %s)", e.Message, displayPointer(e.InstanceLocation)),
 				Range:    yamlast.LocateRange(doc, e.InstanceLocation),
+				Data:     dataFor(e),
 			})
 			return
 		}
@@ -91,6 +100,28 @@ func flattenValidationError(doc *ast.DocumentNode, verr *jsonschema.ValidationEr
 	}
 	walk(verr)
 	return out
+}
+
+func dataFor(e *jsonschema.ValidationError) any {
+	kind := keywordOf(e.KeywordLocation)
+	if kind == "" {
+		return nil
+	}
+	return CauseData{Kind: kind, InstanceLocation: e.InstanceLocation}
+}
+
+// keywordOf returns the last segment of a JSON-Pointer-style schema
+// keyword location, e.g. "/properties/foo/enum" → "enum".
+func keywordOf(p string) string {
+	if p == "" {
+		return ""
+	}
+	for i := len(p) - 1; i >= 0; i-- {
+		if p[i] == '/' {
+			return p[i+1:]
+		}
+	}
+	return p
 }
 
 func displayPointer(p string) string {

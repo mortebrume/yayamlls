@@ -76,10 +76,20 @@ Same shape works via `initializationOptions` or
 `workspace/didChangeConfiguration`. Precedence (low → high):
 `.yamlls.yaml` → `initializationOptions` → `didChangeConfiguration`.
 
+## Capabilities
+
+`textDocument/`: diagnostics, completion, hover, foldingRange,
+documentLink, documentSymbol, codeAction (schema-aware quick-fix for
+enum violations), codeLens (above Flux docs).
+
+`workspace/`: didChangeConfiguration, didChangeWorkspaceFolders, executeCommand.
+
 ## Commands
 
-- `yamlls.showRendered` — returns the renderer's output for a
-  `HelmRelease`/`Kustomization` URI.
+- `yamlls.showRendered <uri>` — current rendered output for a
+  `HelmRelease`/`Kustomization`.
+- `yamlls.showRenderedDiff <uri>` — unified diff between the first
+  successful render (captured at open) and the current render.
 
 ## CLI flags
 

@@ -29,6 +29,7 @@ type failure struct {
 
 func NewStore() *Store {
 	InstallDiskLoader()
+	installEmbeddedLoader()
 	return &Store{
 		compiled: make(map[string]*jsonschema.Schema),
 		failures: make(map[string]failure),
@@ -62,7 +63,8 @@ func (s *Store) Get(ref, docPath string) (*jsonschema.Schema, error) {
 }
 
 func absRef(ref, docPath string) (string, error) {
-	if strings.HasPrefix(ref, "http://") || strings.HasPrefix(ref, "https://") || strings.HasPrefix(ref, "file://") {
+	if strings.HasPrefix(ref, "http://") || strings.HasPrefix(ref, "https://") ||
+		strings.HasPrefix(ref, "file://") || strings.HasPrefix(ref, "embedded://") {
 		return ref, nil
 	}
 	if filepath.IsAbs(ref) {
