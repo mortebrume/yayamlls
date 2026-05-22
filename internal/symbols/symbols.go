@@ -1,6 +1,4 @@
-// Package symbols produces textDocument/documentSymbol outlines. For k8s
-// manifests each document is labeled "<kind>/<metadata.name>"; otherwise
-// the symbol tree mirrors the YAML mapping hierarchy.
+// Package symbols handles textDocument/documentSymbol.
 package symbols
 
 import (

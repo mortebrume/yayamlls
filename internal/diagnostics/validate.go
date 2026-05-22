@@ -70,11 +70,10 @@ func validateDoc(doc *ast.DocumentNode, sch *jsonschema.Schema) []protocol.Diagn
 	return nil
 }
 
-// CauseData is the structured payload attached to each diagnostic's Data
-// field so the code-action handler can produce quick-fixes without
-// re-validating the document.
+// CauseData rides on Diagnostic.Data so codeAction handlers can produce
+// quick-fixes without re-validating.
 type CauseData struct {
-	Kind             string `json:"kind"`             // "enum", "required", "additionalProperties", "type", ...
+	Kind             string `json:"kind"`             // jsonschema keyword: enum, required, type, …
 	InstanceLocation string `json:"instanceLocation"` // JSON Pointer into the source document
 }
 
@@ -110,8 +109,7 @@ func dataFor(e *jsonschema.ValidationError) any {
 	return CauseData{Kind: kind, InstanceLocation: e.InstanceLocation}
 }
 
-// keywordOf returns the last segment of a JSON-Pointer-style schema
-// keyword location, e.g. "/properties/foo/enum" → "enum".
+// keywordOf returns the last segment of a JSON-Pointer keyword location.
 func keywordOf(p string) string {
 	if p == "" {
 		return ""

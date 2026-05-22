@@ -31,7 +31,6 @@ func TestEmbeddedYamllsSchema_LoadsAndCompiles(t *testing.T) {
 		t.Fatalf("compile: %v", err)
 	}
 
-	// Round-trip a valid .yamlls.yaml-shaped payload through the schema.
 	good := map[string]any{
 		"catalog": true,
 		"kubernetes": map[string]any{
@@ -42,7 +41,6 @@ func TestEmbeddedYamllsSchema_LoadsAndCompiles(t *testing.T) {
 		t.Errorf("valid config rejected: %v", err)
 	}
 
-	// Reject an unknown top-level key.
 	bad := map[string]any{"schmas": map[string]any{"a": "b"}}
 	if err := sch.Validate(bad); err == nil {
 		t.Errorf("typo'd key 'schmas' should be rejected")

@@ -1,6 +1,4 @@
-// Package folding produces textDocument/foldingRange results from a
-// parsed YAML AST: every multi-line mapping, sequence, and document
-// becomes a foldable region.
+// Package folding handles textDocument/foldingRange.
 package folding
 
 import (

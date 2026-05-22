@@ -79,17 +79,15 @@ Same shape works via `initializationOptions` or
 ## Capabilities
 
 `textDocument/`: diagnostics, completion, hover, foldingRange,
-documentLink, documentSymbol, codeAction (schema-aware quick-fix for
-enum violations), codeLens (above Flux docs).
+documentLink, documentSymbol, codeAction (enum quick-fix), codeLens.
 
 `workspace/`: didChangeConfiguration, didChangeWorkspaceFolders, executeCommand.
 
 ## Commands
 
-- `yamlls.showRendered <uri>` — current rendered output for a
-  `HelmRelease`/`Kustomization`.
-- `yamlls.showRenderedDiff <uri>` — unified diff between the first
-  successful render (captured at open) and the current render.
+- `yamlls.showRendered <uri>` — rendered output for a Flux source.
+- `yamlls.showRenderedDiff <uri>` — unified diff between the open-time
+  render and the current render.
 
 ## CLI flags
 

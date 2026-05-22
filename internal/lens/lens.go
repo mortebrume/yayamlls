@@ -1,6 +1,4 @@
-// Package lens produces textDocument/codeLens results — inline command
-// triggers shown above each Flux HelmRelease/Kustomization document so
-// yamlls.showRendered is discoverable without a command palette.
+// Package lens handles textDocument/codeLens.
 package lens
 
 import (
@@ -39,7 +37,7 @@ func Lenses(uri, text string) []protocol.CodeLens {
 			protocol.CodeLens{
 				Range: lensRange,
 				Command: &protocol.Command{
-					Title:     "▶ View rendered",
+					Title:     "View rendered",
 					Command:   commandShowRendered,
 					Arguments: []any{uri},
 				},
@@ -47,7 +45,7 @@ func Lenses(uri, text string) []protocol.CodeLens {
 			protocol.CodeLens{
 				Range: lensRange,
 				Command: &protocol.Command{
-					Title:     "⇄ Diff rendered",
+					Title:     "Diff rendered",
 					Command:   commandShowRenderedDiff,
 					Arguments: []any{uri},
 				},

@@ -1,5 +1,5 @@
-// Package actions implements textDocument/codeAction quick-fixes derived
-// from the structured CauseData attached to each schema diagnostic.
+// Package actions handles textDocument/codeAction quick-fixes derived
+// from CauseData attached to each schema diagnostic.
 package actions
 
 import (
@@ -12,10 +12,6 @@ import (
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )
 
-// Compute returns the code actions for the diagnostics in params.Context
-// that lie within params.Range. sch is the schema currently associated
-// with the document (may be nil; we still try to recover enum values
-// from cached schema state via sch.Resolve walks).
 func Compute(uri string, sch *jsonschema.Schema, diags []protocol.Diagnostic) []protocol.CodeAction {
 	var out []protocol.CodeAction
 	for i := range diags {
@@ -36,8 +32,8 @@ func decode(raw any) (diagnostics.CauseData, bool) {
 	if raw == nil {
 		return diagnostics.CauseData{}, false
 	}
-	// LSP marshals Diagnostic.Data through JSON, so we may see either the
-	// original Go struct or a generic map. Handle both.
+	// Diagnostic.Data may arrive as the original Go struct OR as a
+	// generic map after a JSON round-trip via the LSP transport.
 	switch v := raw.(type) {
 	case diagnostics.CauseData:
 		return v, true

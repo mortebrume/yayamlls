@@ -28,7 +28,7 @@ type Server struct {
 	rendMu           sync.Mutex
 	renderedDiags    map[string][]protocol.Diagnostic
 	renderedRaw      map[string][]byte
-	renderedBaseline map[string][]byte // first successful render per URI; cleared on didClose
+	renderedBaseline map[string][]byte
 
 	// connNotify is captured lazily from the first incoming request so the
 	// async render pipeline can push diagnostics without holding onto a
@@ -121,8 +121,6 @@ func (s *Server) initialize(ctx *glsp.Context, params *protocol.InitializeParams
 	}, nil
 }
 
-// pickWorkspaceRoot returns the first WorkspaceFolder URI when set, else
-// falls back to deprecated rootUri.
 func pickWorkspaceRoot(params *protocol.InitializeParams) string {
 	if len(params.WorkspaceFolders) > 0 {
 		return params.WorkspaceFolders[0].URI
@@ -211,7 +209,6 @@ func (s *Server) Notify(uri string, out *render.RenderedOutput, err error) {
 	if out != nil {
 		s.renderedRaw[uri] = out.Raw
 		if _, ok := s.renderedBaseline[uri]; !ok {
-			// Capture the first successful render as the diff baseline.
 			s.renderedBaseline[uri] = append([]byte(nil), out.Raw...)
 		}
 	}
@@ -251,9 +248,8 @@ func (s *Server) publishWith(notify glsp.NotifyFunc, d *document.Document) {
 		diags = append(diags, diagnostics.ParseErrorDiagnostic(parsed.Err))
 	}
 
-	// Load failures surface only for file-level refs (modeline, glob,
-	// catalog) — per-doc auto-detect would otherwise warn on every CRD
-	// missing from the configured mirror.
+	// Surface load failures only for file-level refs; per-doc auto-detect
+	// would warn on every CRD missing from the configured mirror.
 	loadFailures := make(map[string]bool)
 	for _, doc := range parsed.Docs() {
 		ref := fileRef

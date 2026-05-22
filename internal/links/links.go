@@ -1,6 +1,4 @@
-// Package links produces textDocument/documentLink results. v1 only
-// recognises the `# yaml-language-server: $schema=URL` modeline and
-// turns the URL into a clickable link.
+// Package links handles textDocument/documentLink for the modeline $schema URL.
 package links
 
 import (
