@@ -3,7 +3,26 @@ package schema
 import (
 	"bufio"
 	"strings"
+
+	"github.com/goccy/go-yaml/ast"
 )
+
+func FindModelineSchemaForDoc(doc *ast.DocumentNode) string {
+	if doc == nil || doc.Body == nil {
+		return ""
+	}
+	comment := doc.Body.GetComment()
+	if comment == nil {
+		return ""
+	}
+	var b strings.Builder
+	for _, c := range comment.Comments {
+		if tok := c.GetToken(); tok != nil {
+			b.WriteString(tok.Origin)
+		}
+	}
+	return FindModelineSchema(b.String())
+}
 
 const modelinePrefix = "# yaml-language-server:"
 

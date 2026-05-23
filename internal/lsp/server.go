@@ -252,7 +252,10 @@ func (s *Server) publishWith(notify glsp.NotifyFunc, d *document.Document) {
 	// would warn on every CRD missing from the configured mirror.
 	loadFailures := make(map[string]bool)
 	for _, doc := range parsed.Docs() {
-		ref := fileRef
+		ref := schema.FindModelineSchemaForDoc(doc)
+		if ref == "" {
+			ref = fileRef
+		}
 		userIntent := ref != ""
 		if ref == "" {
 			ref = s.resolver.K8sURLForNode(doc.Body)
