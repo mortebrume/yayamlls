@@ -16,6 +16,26 @@ default `kubernetes.schemaUrl` is
 `https://k8s-schemas.home-operations.com/{groupSeg}{kindLower}_{versionLower}.json`;
 override in `.yamlls.yaml` to point elsewhere. 404s are silently skipped.
 
+## vs. redhat/yaml-language-server
+
+|                                                | yamlls                                       | redhat/yaml-language-server                                  |
+| ---------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------ |
+| Runtime                                        | static Go binary                             | Node.js ≥ 12                                                 |
+| Diagnostics, completion, hover                 | yes                                          | yes                                                          |
+| Symbols, folding, links, code actions          | yes                                          | yes                                                          |
+| Code lens                                      | rendered output, diff                        | none                                                         |
+| Per-doc schema in multi-doc files              | per `---` block                              | file-level only ([#80][rh-80])                               |
+| Kubernetes auto-detect                         | per-doc, URL template from apiVersion+kind   | `yaml.kubernetesCRDStore` ([datreeio/CRDs-catalog][datree])  |
+| Workspace config file                          | `.yamlls.yaml`                               | editor settings only                                         |
+| Flux `HelmRelease` / `Kustomization` rendering | via [flate][flate]                           | no                                                           |
+| Formatting                                     | no                                           | yes (Prettier)                                               |
+| Custom YAML tags (`!Ref`, …)                   | no                                           | yes                                                          |
+| Diagnostic suppression comments                | no                                           | yes                                                          |
+| JSON Schema drafts                             | 04, 06, 07, 2019-09, 2020-12                 | 04, 07, 2019-09, 2020-12                                     |
+
+[rh-80]: https://github.com/redhat-developer/yaml-language-server/issues/80
+[datree]: https://github.com/datreeio/CRDs-catalog
+
 ## Install
 
 Homebrew:
@@ -41,7 +61,117 @@ go install github.com/home-operations/flate/cmd/flate@latest
 
 ## Editor setup
 
-See [docs/SETUP.md](docs/SETUP.md).
+`yamlls` speaks LSP 3.16 over stdio. Put the binary on `$PATH` or pass
+an absolute path.
+
+### Neovim (nvim-lspconfig)
+
+```lua
+local lspconfig = require("lspconfig")
+local configs = require("lspconfig.configs")
+
+if not configs.yamlls then
+  configs.yamlls = {
+    default_config = {
+      cmd = { "yamlls" },
+      filetypes = { "yaml" },
+      root_dir = lspconfig.util.find_git_ancestor,
+      single_file_support = true,
+    },
+  }
+end
+
+lspconfig.yamlls.setup({})
+```
+
+### VSCode
+
+Minimal extension:
+
+```jsonc
+// package.json
+{
+  "name": "yamlls",
+  "engines": { "vscode": "^1.85.0" },
+  "activationEvents": ["onLanguage:yaml"],
+  "main": "./extension.js"
+}
+```
+
+```js
+// extension.js  (vscode-languageclient v9+)
+const { LanguageClient } = require("vscode-languageclient/node");
+
+let client;
+exports.activate = function (ctx) {
+  client = new LanguageClient(
+    "yamlls",
+    "yamlls",
+    { command: "yamlls" },
+    { documentSelector: [{ scheme: "file", language: "yaml" }] }
+  );
+  client.start();              // returns Promise<void>, fire-and-forget
+  ctx.subscriptions.push(client);
+};
+exports.deactivate = () => client?.stop();
+```
+
+### Helix
+
+```toml
+# ~/.config/helix/languages.toml
+[language-server.yamlls]
+command = "yamlls"
+
+[[language]]
+name = "yaml"
+language-servers = ["yamlls"]
+```
+
+### Zed
+
+Zed's `lsp` key only accepts known language-server identifiers, so
+`yamlls` as a top-level key triggers `Property yamlls is not allowed`.
+Override Zed's bundled `yaml-language-server` binary instead:
+
+```jsonc
+// ~/.config/zed/settings.json
+{
+  "lsp": {
+    "yaml-language-server": {
+      "binary": {
+        "ignore_system_version": true,
+        "path": "yamlls"
+      },
+      "initialization_options": {
+        "catalog": true
+      }
+    }
+  }
+}
+```
+
+### Flux rendering
+
+With [flate][flate] installed, opening a `HelmRelease` or
+`Kustomization` surfaces schema violations on rendered manifests as
+`[rendered <kind>/<name> @ <jsonptr>]` on the source document. The
+`yamlls.showRendered` command returns the rendered YAML; in Neovim:
+
+```lua
+vim.lsp.buf.execute_command({
+  command = "yamlls.showRendered",
+  arguments = { vim.uri_from_bufnr(0) },
+})
+```
+
+### Debugging
+
+```sh
+yamlls --log-file /tmp/yamlls.log -v 2
+```
+
+`-v 0` is silent (default), `1` is info, `2+` is debug.
 
 ## Configuration
 
