@@ -28,7 +28,7 @@ func Lenses(uri, text string) []protocol.CodeLens {
 		if !ok || !isFluxRenderable(gvk) {
 			continue
 		}
-		r := yamlast.LocateRange(doc, "")
+		r := yamlast.LocateRange(doc, "", text)
 		lensRange := protocol.Range{
 			Start: protocol.Position{Line: r.Start.Line, Character: 0},
 			End:   protocol.Position{Line: r.Start.Line, Character: 0},

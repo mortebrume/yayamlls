@@ -277,7 +277,7 @@ func (s *Server) publishWith(notify glsp.NotifyFunc, d *document.Document) {
 			}
 			continue
 		}
-		diags = append(diags, diagnostics.ValidateDoc(doc, sch)...)
+		diags = append(diags, diagnostics.ValidateDoc(doc, sch, d.Text)...)
 	}
 
 	diags = append(diags, s.renderedDiagnosticsFor(d.URI)...)

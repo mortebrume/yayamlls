@@ -26,18 +26,19 @@ func Validate(parsed *yamlast.Parsed, sch *jsonschema.Schema) []protocol.Diagnos
 		return out
 	}
 	for _, doc := range parsed.Docs() {
-		out = append(out, validateDoc(doc, sch)...)
+		out = append(out, validateDoc(doc, sch, parsed.Text)...)
 	}
 	return out
 }
 
-// ValidateDoc runs schema validation against a single YAML document.
-// Returns nil when sch is nil or the doc validates cleanly.
-func ValidateDoc(doc *ast.DocumentNode, sch *jsonschema.Schema) []protocol.Diagnostic {
+// ValidateDoc runs schema validation against a single YAML document. src is
+// the document text, used to place diagnostics at UTF-16 columns. Returns
+// nil when sch is nil or the doc validates cleanly.
+func ValidateDoc(doc *ast.DocumentNode, sch *jsonschema.Schema, src string) []protocol.Diagnostic {
 	if sch == nil {
 		return nil
 	}
-	return validateDoc(doc, sch)
+	return validateDoc(doc, sch, src)
 }
 
 // ParseErrorDiagnostic produces the file-level diagnostic for a YAML
@@ -47,26 +48,26 @@ func ParseErrorDiagnostic(err error) protocol.Diagnostic {
 	return parseErrorDiag(err)
 }
 
-func validateDoc(doc *ast.DocumentNode, sch *jsonschema.Schema) []protocol.Diagnostic {
+func validateDoc(doc *ast.DocumentNode, sch *jsonschema.Schema, src string) []protocol.Diagnostic {
 	value, err := yamlast.Decode(doc)
 	if err != nil {
 		return []protocol.Diagnostic{{
 			Severity: ptr(protocol.DiagnosticSeverityError),
 			Source:   ptr(Source),
 			Message:  fmt.Sprintf("decode: %v", err),
-			Range:    yamlast.LocateRange(doc, ""),
+			Range:    yamlast.LocateRange(doc, "", src),
 		}}
 	}
 	if err := sch.Validate(value); err != nil {
 		var verr *jsonschema.ValidationError
 		if errors.As(err, &verr) {
-			return flattenValidationError(doc, verr)
+			return flattenValidationError(doc, verr, src)
 		}
 		return []protocol.Diagnostic{{
 			Severity: ptr(protocol.DiagnosticSeverityError),
 			Source:   ptr(Source),
 			Message:  err.Error(),
-			Range:    yamlast.LocateRange(doc, ""),
+			Range:    yamlast.LocateRange(doc, "", src),
 		}}
 	}
 	return nil
@@ -81,7 +82,7 @@ type CauseData struct {
 
 // flattenValidationError emits one diagnostic per leaf cause — leaves
 // carry the actionable message; root nodes are generic wrappers.
-func flattenValidationError(doc *ast.DocumentNode, verr *jsonschema.ValidationError) []protocol.Diagnostic {
+func flattenValidationError(doc *ast.DocumentNode, verr *jsonschema.ValidationError, src string) []protocol.Diagnostic {
 	var out []protocol.Diagnostic
 	var walk func(e *jsonschema.ValidationError)
 	walk = func(e *jsonschema.ValidationError) {
@@ -90,7 +91,7 @@ func flattenValidationError(doc *ast.DocumentNode, verr *jsonschema.ValidationEr
 				Severity: ptr(protocol.DiagnosticSeverityError),
 				Source:   ptr(Source),
 				Message:  fmt.Sprintf("%s (at %s)", e.Message, displayPointer(e.InstanceLocation)),
-				Range:    yamlast.LocateRange(doc, e.InstanceLocation),
+				Range:    yamlast.LocateRange(doc, e.InstanceLocation, src),
 				Data:     dataFor(e),
 			})
 			return

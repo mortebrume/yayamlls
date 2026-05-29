@@ -21,14 +21,14 @@ func Outline(text string) []protocol.DocumentSymbol {
 		if doc.Body == nil {
 			continue
 		}
-		out = append(out, documentSymbol(doc))
+		out = append(out, documentSymbol(doc, text))
 	}
 	return out
 }
 
-func documentSymbol(doc *ast.DocumentNode) protocol.DocumentSymbol {
+func documentSymbol(doc *ast.DocumentNode, src string) protocol.DocumentSymbol {
 	name := docLabel(doc)
-	r := yamlast.LocateRange(doc, "")
+	r := yamlast.LocateRange(doc, "", src)
 	sym := protocol.DocumentSymbol{
 		Name:           name,
 		Kind:           protocol.SymbolKindNamespace,
@@ -36,7 +36,7 @@ func documentSymbol(doc *ast.DocumentNode) protocol.DocumentSymbol {
 		SelectionRange: r,
 	}
 	if m, ok := doc.Body.(*ast.MappingNode); ok {
-		sym.Children = mappingChildren(m)
+		sym.Children = mappingChildren(m, src)
 	}
 	return sym
 }
@@ -61,21 +61,21 @@ func docLabel(doc *ast.DocumentNode) string {
 	return "document"
 }
 
-func mappingChildren(m *ast.MappingNode) []protocol.DocumentSymbol {
+func mappingChildren(m *ast.MappingNode, src string) []protocol.DocumentSymbol {
 	if m == nil {
 		return nil
 	}
 	out := make([]protocol.DocumentSymbol, 0, len(m.Values))
 	for _, kv := range m.Values {
-		out = append(out, mappingEntrySymbol(kv))
+		out = append(out, mappingEntrySymbol(kv, src))
 	}
 	return out
 }
 
-func mappingEntrySymbol(kv *ast.MappingValueNode) protocol.DocumentSymbol {
+func mappingEntrySymbol(kv *ast.MappingValueNode, src string) protocol.DocumentSymbol {
 	keyName := keyString(kv.Key)
 	kind, detail := classify(kv.Value)
-	r := nodeRange(kv.Key)
+	r := nodeRange(kv.Key, src)
 	sym := protocol.DocumentSymbol{
 		Name:           keyName,
 		Kind:           kind,
@@ -87,21 +87,21 @@ func mappingEntrySymbol(kv *ast.MappingValueNode) protocol.DocumentSymbol {
 	}
 	switch v := kv.Value.(type) {
 	case *ast.MappingNode:
-		sym.Children = mappingChildren(v)
+		sym.Children = mappingChildren(v, src)
 	case *ast.SequenceNode:
-		sym.Children = sequenceChildren(v)
+		sym.Children = sequenceChildren(v, src)
 	}
 	return sym
 }
 
-func sequenceChildren(s *ast.SequenceNode) []protocol.DocumentSymbol {
+func sequenceChildren(s *ast.SequenceNode, src string) []protocol.DocumentSymbol {
 	if s == nil {
 		return nil
 	}
 	out := make([]protocol.DocumentSymbol, 0, len(s.Values))
 	for i, item := range s.Values {
 		kind, detail := classify(item)
-		r := nodeRange(item)
+		r := nodeRange(item, src)
 		sym := protocol.DocumentSymbol{
 			Name:           fmt.Sprintf("[%d]", i),
 			Kind:           kind,
@@ -113,9 +113,9 @@ func sequenceChildren(s *ast.SequenceNode) []protocol.DocumentSymbol {
 		}
 		switch v := item.(type) {
 		case *ast.MappingNode:
-			sym.Children = mappingChildren(v)
+			sym.Children = mappingChildren(v, src)
 		case *ast.SequenceNode:
-			sym.Children = sequenceChildren(v)
+			sym.Children = sequenceChildren(v, src)
 		}
 		out = append(out, sym)
 	}
@@ -155,7 +155,7 @@ func keyString(n ast.Node) string {
 	return "?"
 }
 
-func nodeRange(n ast.Node) protocol.Range {
+func nodeRange(n ast.Node, src string) protocol.Range {
 	if n == nil {
 		return protocol.Range{}
 	}
@@ -163,10 +163,10 @@ func nodeRange(n ast.Node) protocol.Range {
 	if tok == nil || tok.Position == nil {
 		return protocol.Range{}
 	}
-	line := uint32(tok.Position.Line - 1)
-	col := uint32(tok.Position.Column - 1)
+	// goccy reports rune-based columns; LSP wants UTF-16 code units.
+	start := yamlast.UTF16Position(src, tok.Position.Line, tok.Position.Column)
 	return protocol.Range{
-		Start: protocol.Position{Line: line, Character: col},
-		End:   protocol.Position{Line: line, Character: col + uint32(len(tok.Value))},
+		Start: start,
+		End:   protocol.Position{Line: start.Line, Character: start.Character + yamlast.UTF16Len(tok.Value)},
 	}
 }

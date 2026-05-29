@@ -2,6 +2,7 @@ package yamlast
 
 import (
 	"strings"
+	"unicode/utf16"
 
 	yaml "github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
@@ -48,15 +49,17 @@ func isAllDigits(s string) bool {
 	return true
 }
 
-// LocateRange returns the LSP range that covers the node at ptr.
-// Falls back to the document body's range when ptr can't be resolved —
-// common for `required` violations where the field is simply missing.
-func LocateRange(doc *ast.DocumentNode, ptr string) protocol.Range {
+// LocateRange returns the LSP range that covers the node at ptr. src is the
+// document text, needed to translate goccy's rune-based columns into the
+// UTF-16 code units LSP uses. Falls back to the document body's range when
+// ptr can't be resolved — common for `required` violations where the field
+// is simply missing.
+func LocateRange(doc *ast.DocumentNode, ptr, src string) protocol.Range {
 	node, ok := lookup(doc, ptr)
 	if !ok {
 		node = doc.Body
 	}
-	return nodeRange(node)
+	return nodeRange(src, node)
 }
 
 func lookup(doc *ast.DocumentNode, ptr string) (ast.Node, bool) {
@@ -77,7 +80,7 @@ func lookup(doc *ast.DocumentNode, ptr string) (ast.Node, bool) {
 	return n, true
 }
 
-func nodeRange(n ast.Node) protocol.Range {
+func nodeRange(src string, n ast.Node) protocol.Range {
 	if n == nil {
 		return protocol.Range{}
 	}
@@ -91,36 +94,33 @@ func nodeRange(n ast.Node) protocol.Range {
 		}
 	}
 
-	startLine, startCol := tokenStart(v.start)
-	endLine, endCol := tokenEnd(v.end)
-	r := protocol.Range{
-		Start: protocol.Position{Line: startLine, Character: startCol},
-		End:   protocol.Position{Line: endLine, Character: endCol},
-	}
+	start := tokenStart(src, v.start)
+	end := tokenEnd(src, v.end)
+	r := protocol.Range{Start: start, End: end}
 	if r.End.Line < r.Start.Line || (r.End.Line == r.Start.Line && r.End.Character <= r.Start.Character) {
-		r.End = protocol.Position{Line: startLine, Character: startCol + 1}
+		r.End = protocol.Position{Line: start.Line, Character: start.Character + 1}
 	}
 	return r
 }
 
-func tokenStart(t *token.Token) (line, col uint32) {
+func tokenStart(src string, t *token.Token) protocol.Position {
 	if t == nil || t.Position == nil {
-		return 0, 0
+		return protocol.Position{}
 	}
-	return uint32(t.Position.Line - 1), uint32(t.Position.Column - 1)
+	return UTF16Position(src, t.Position.Line, t.Position.Column)
 }
 
-// tokenEnd advances past the token's meaningful content. goccy's Origin
-// includes the whitespace preceding the token (e.g. the space after `:`)
-// but Position is anchored to the first meaningful rune, so for
-// single-line tokens we measure Value; for multi-line content we walk
-// the trimmed Origin to count newlines.
-func tokenEnd(t *token.Token) (line, col uint32) {
-	line, col = tokenStart(t)
+// tokenEnd returns the position just past the token's meaningful content.
+// goccy's Origin includes the whitespace preceding the token (e.g. the
+// space after `:`) but Position is anchored to the first meaningful rune,
+// so for single-line tokens we measure Value; for multi-line content we
+// walk the trimmed Origin to count newlines. Widths are in UTF-16 units.
+func tokenEnd(src string, t *token.Token) protocol.Position {
+	start := tokenStart(src, t)
+	line, col := start.Line, start.Character
 	body := t.Value
 	if body == "" || !strings.ContainsRune(body, '\n') && !strings.ContainsRune(t.Origin, '\n') {
-		col += uint32(len(body))
-		return line, col
+		return protocol.Position{Line: line, Character: col + UTF16Len(body)}
 	}
 	body = strings.TrimLeft(t.Origin, " \t")
 	body = strings.TrimRight(body, " \t\n")
@@ -130,9 +130,80 @@ func tokenEnd(t *token.Token) (line, col uint32) {
 			col = 0
 			continue
 		}
-		col++
+		col += utf16RuneLen(r)
 	}
-	return line, col
+	return protocol.Position{Line: line, Character: col}
+}
+
+// UTF16Position converts goccy's 1-based (line, runeCol) — whose column
+// counts Unicode code points — into a 0-based LSP position whose character
+// counts UTF-16 code units. src supplies the line so columns past a
+// non-BMP rune are translated correctly.
+func UTF16Position(src string, line, runeCol int) protocol.Position {
+	l := line - 1
+	if l < 0 {
+		l = 0
+	}
+	return protocol.Position{Line: uint32(l), Character: utf16Column(lineText(src, l), runeCol)}
+}
+
+func utf16Column(text string, runeCol int) uint32 {
+	if runeCol <= 1 {
+		return 0
+	}
+	target := runeCol - 1
+	var col uint32
+	idx := 0
+	for _, r := range text {
+		if idx >= target {
+			return col
+		}
+		col += utf16RuneLen(r)
+		idx++
+	}
+	if idx < target {
+		// Source shorter than the reported column (e.g. unavailable): fall
+		// back to one unit per remaining rune so the result stays monotonic.
+		col += uint32(target - idx)
+	}
+	return col
+}
+
+// UTF16Len returns the number of UTF-16 code units in s.
+func UTF16Len(s string) uint32 {
+	var n uint32
+	for _, r := range s {
+		n += utf16RuneLen(r)
+	}
+	return n
+}
+
+func utf16RuneLen(r rune) uint32 {
+	if n := utf16.RuneLen(r); n > 0 {
+		return uint32(n)
+	}
+	return 1
+}
+
+func lineText(src string, line0 int) string {
+	if src == "" || line0 < 0 {
+		return ""
+	}
+	cur, start := 0, 0
+	for i := 0; i < len(src); i++ {
+		if src[i] != '\n' {
+			continue
+		}
+		if cur == line0 {
+			return src[start:i]
+		}
+		cur++
+		start = i + 1
+	}
+	if cur == line0 {
+		return src[start:]
+	}
+	return ""
 }
 
 type extentVisitor struct{ start, end *token.Token }

@@ -11,11 +11,12 @@ import (
 type Parsed struct {
 	File *ast.File
 	Err  error
+	Text string
 }
 
 func Parse(b []byte) *Parsed {
 	f, err := parser.ParseBytes(b, parser.ParseComments)
-	return &Parsed{File: f, Err: err}
+	return &Parsed{File: f, Err: err, Text: string(b)}
 }
 
 // ParseForCursor is the lenient variant used by completion and hover:
