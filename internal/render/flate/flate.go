@@ -109,8 +109,8 @@ func (r *Renderer) resolveBinary() (string, error) {
 		}
 	})
 	if r.resolved == "" {
-		return "", errors.New("flate binary not found on PATH — install with " +
-			"`go install github.com/home-operations/flate/cmd/flate@latest`")
+		return "", fmt.Errorf("%w: flate binary not found on PATH — install with "+
+			"`go install github.com/home-operations/flate/cmd/flate@latest`", render.ErrRendererUnavailable)
 	}
 	return r.resolved, nil
 }

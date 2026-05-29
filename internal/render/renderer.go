@@ -2,12 +2,18 @@ package render
 
 import (
 	"encoding/json"
+	"errors"
 	"strings"
 	"sync"
 
 	yaml "github.com/goccy/go-yaml"
 	"github.com/home-operations/yamlls/internal/yamlast"
 )
+
+// ErrRendererUnavailable signals that a renderer's external tool is not
+// installed. Callers surface no diagnostic for it: a missing optional
+// helper is a non-condition, not an error in the user's document.
+var ErrRendererUnavailable = errors.New("renderer unavailable")
 
 type Configurable interface {
 	Configure(raw json.RawMessage) error
