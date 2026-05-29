@@ -71,4 +71,13 @@ func TestMerge_OverrideWins(t *testing.T) {
 	}
 }
 
+func TestMerge_CarriesKubernetes(t *testing.T) {
+	base := Settings{}
+	override := Settings{Kubernetes: &KubernetesSettings{SchemaURL: "https://mirror.example/{kindLower}.json"}}
+	got := Merge(base, override)
+	if got.Kubernetes == nil || got.Kubernetes.SchemaURL != "https://mirror.example/{kindLower}.json" {
+		t.Errorf("override kubernetes.schemaUrl dropped: %+v", got.Kubernetes)
+	}
+}
+
 func ptrBool(b bool) *bool { return &b }

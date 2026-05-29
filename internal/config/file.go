@@ -97,6 +97,9 @@ func Merge(base, override Settings) Settings {
 	if override.CatalogURL != "" {
 		out.CatalogURL = override.CatalogURL
 	}
+	if override.Kubernetes != nil {
+		out.Kubernetes = override.Kubernetes
+	}
 	if override.Renderers != nil {
 		if out.Renderers == nil {
 			out.Renderers = make(map[string]json.RawMessage)
