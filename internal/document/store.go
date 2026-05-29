@@ -48,21 +48,26 @@ func (s *Store) Get(uri string) (*Document, bool) {
 func (s *Store) Apply(uri string, version int32, changes []any) (*Document, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	d, ok := s.docs[uri]
+	cur, ok := s.docs[uri]
 	if !ok {
 		return nil, fmt.Errorf("document not open: %s", uri)
 	}
+	// Build a fresh Document rather than mutating in place: the previous
+	// pointer may still be read by the async render goroutine, so an
+	// in-place write to Text would be a data race.
+	text := cur.Text
 	for _, raw := range changes {
 		switch c := raw.(type) {
 		case protocol.TextDocumentContentChangeEvent:
-			d.Text = applyRangeChange(d.Text, c)
+			text = applyRangeChange(text, c)
 		case protocol.TextDocumentContentChangeEventWhole:
-			d.Text = c.Text
+			text = c.Text
 		default:
 			return nil, fmt.Errorf("unsupported change event type %T", raw)
 		}
 	}
-	d.Version = version
+	d := &Document{URI: uri, LanguageID: cur.LanguageID, Version: version, Text: text}
+	s.docs[uri] = d
 	return d, nil
 }
 
