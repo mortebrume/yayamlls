@@ -13,7 +13,10 @@ import (
 	"github.com/tliron/glsp/server"
 )
 
-var version = "0.0.0-dev"
+var (
+	version = "0.0.0-dev"
+	commit  = ""
+)
 
 func main() {
 	var (
@@ -27,7 +30,11 @@ func main() {
 	flag.Parse()
 
 	if showVersion {
-		fmt.Println(version)
+		if commit != "" {
+			fmt.Printf("%s (%s)\n", version, commit)
+		} else {
+			fmt.Println(version)
+		}
 		return
 	}
 
