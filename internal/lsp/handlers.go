@@ -14,7 +14,7 @@ import (
 	"github.com/home-operations/yamlls/internal/links"
 	"github.com/home-operations/yamlls/internal/render"
 	"github.com/home-operations/yamlls/internal/symbols"
-	"github.com/home-operations/yamlls/internal/uri"
+	fileuri "github.com/home-operations/yamlls/internal/uri"
 	"github.com/home-operations/yamlls/internal/yamlast"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"github.com/tliron/glsp"
@@ -251,7 +251,7 @@ func (s *Server) clearDiagnostics(ctx *glsp.Context, uri string) {
 }
 
 func uriToPath(docURI string) string {
-	return uri.ToPath(docURI)
+	return fileuri.ToPath(docURI)
 }
 
 func schemaLoadDiag(err error) protocol.Diagnostic {
