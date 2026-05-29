@@ -124,8 +124,10 @@ func splitAPIVersion(v string) (group, version string) {
 	return g, ver
 }
 
-// MatchesKind matches doc.Kind exactly and doc.APIGroup by prefix so
-// "helm.toolkit.fluxcd.io" matches any of v2beta1, v2beta2, v2.
+// MatchesKind matches doc.Kind exactly and doc.APIGroup on a group boundary
+// so "helm.toolkit.fluxcd.io" matches v2beta1/v2beta2/v2 (the version follows
+// a "/") but not an unrelated group that merely shares the prefix, e.g.
+// "helm.toolkit.fluxcd.iox".
 func MatchesKind(doc *SourceDocument, kind, group string) bool {
 	if doc == nil {
 		return false
@@ -133,5 +135,5 @@ func MatchesKind(doc *SourceDocument, kind, group string) bool {
 	if doc.Kind != kind {
 		return false
 	}
-	return strings.HasPrefix(doc.APIGroup, group)
+	return doc.APIGroup == group || strings.HasPrefix(doc.APIGroup, group+"/")
 }
