@@ -2,15 +2,59 @@ package flate_test
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/home-operations/yamlls/internal/render"
 	"github.com/home-operations/yamlls/internal/render/flate"
 )
+
+// Run with -race: Render (pipeline goroutine) and Configure (LSP request
+// goroutine) touch the same resolution state and must not race.
+func TestRenderer_ConfigureDuringRenderNoRace(t *testing.T) {
+	r := flate.New()
+	doc := &render.SourceDocument{
+		URI:      "file:///tmp/x.yaml",
+		Path:     "/tmp/x.yaml",
+		Kind:     "HelmRelease",
+		APIGroup: "helm.toolkit.fluxcd.io/v2",
+	}
+	var wg sync.WaitGroup
+	stop := make(chan struct{})
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		for {
+			select {
+			case <-stop:
+				return
+			default:
+				_, _ = r.Render(context.Background(), doc)
+			}
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		for i := 0; ; i++ {
+			select {
+			case <-stop:
+				return
+			default:
+				_ = r.Configure(json.RawMessage(fmt.Sprintf(`{"binary":"flate-missing-%d"}`, i%2)))
+			}
+		}
+	}()
+	time.Sleep(50 * time.Millisecond)
+	close(stop)
+	wg.Wait()
+}
 
 func writeStub(t *testing.T, body string) string {
 	t.Helper()

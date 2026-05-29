@@ -21,10 +21,10 @@ const providerName = "flate"
 type Renderer struct {
 	Binary string
 
-	mu         sync.Mutex
-	disabled   bool
-	resolved   string
-	lookupOnce sync.Once
+	mu       sync.Mutex
+	disabled bool
+	resolved string // cached exec.LookPath result for the current Binary
+	looked   bool   // whether resolution has been attempted for current Binary
 }
 
 func New() *Renderer { return &Renderer{Binary: providerName} }
@@ -50,7 +50,7 @@ func (r *Renderer) Configure(raw json.RawMessage) error {
 	if cfg.Binary != "" && cfg.Binary != r.Binary {
 		r.Binary = cfg.Binary
 		r.resolved = ""
-		r.lookupOnce = sync.Once{}
+		r.looked = false
 	}
 	return nil
 }
@@ -99,7 +99,9 @@ func (r *Renderer) Render(ctx context.Context, doc *render.SourceDocument) (*ren
 }
 
 func (r *Renderer) resolveBinary() (string, error) {
-	r.lookupOnce.Do(func() {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if !r.looked {
 		name := r.Binary
 		if name == "" {
 			name = providerName
@@ -107,7 +109,8 @@ func (r *Renderer) resolveBinary() (string, error) {
 		if abs, err := exec.LookPath(name); err == nil {
 			r.resolved = abs
 		}
-	})
+		r.looked = true
+	}
 	if r.resolved == "" {
 		return "", fmt.Errorf("%w: flate binary not found on PATH — install with "+
 			"`go install github.com/home-operations/flate/cmd/flate@latest`", render.ErrRendererUnavailable)
