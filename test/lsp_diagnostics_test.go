@@ -190,3 +190,69 @@ func TestPublishesEmptyDiagnosticsArray(t *testing.T) {
 		t.Errorf("expected zero diagnostics for valid doc, got %d: %v", len(diags), diags)
 	}
 }
+
+func TestSuppressesDiagnosticWithDisableLine(t *testing.T) {
+	bin := buildBinary(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, bin)
+	stdin, _ := cmd.StdinPipe()
+	stdout, _ := cmd.StdoutPipe()
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	if err := cmd.Start(); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = stdin.Close(); _ = cmd.Wait() })
+
+	conn := &rpcConn{w: stdin, r: bufio.NewReader(stdout)}
+	if _, err := conn.send("initialize", map[string]any{
+		"processId":    nil,
+		"rootUri":      nil,
+		"capabilities": map[string]any{},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := conn.readFrame(); err != nil {
+		t.Fatalf("init response: %v (stderr: %s)", err, stderr.String())
+	}
+	if err := conn.notify("initialized", map[string]any{}); err != nil {
+		t.Fatal(err)
+	}
+
+	_, thisFile, _, _ := runtime.Caller(0)
+	repo := filepath.Dir(filepath.Dir(thisFile))
+	docPath := filepath.Join(repo, "test", "fixtures", "person-invalid.yaml")
+	uri := "file://" + docPath
+	// Same invalid age as TestPublishesSchemaDiagnostics, but suppressed.
+	body := "# yaml-language-server: $schema=./schemas/person.json\nname: Alice\nage: \"thirty\"  # yamlls-disable-line\n"
+
+	if err := conn.notify("textDocument/didOpen", map[string]any{
+		"textDocument": map[string]any{
+			"uri":        uri,
+			"languageId": "yaml",
+			"version":    1,
+			"text":       body,
+		},
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	frame, err := readUntilDiagnostics(conn, 5*time.Second)
+	if err != nil {
+		t.Fatalf("%v (stderr: %s)", err, stderr.String())
+	}
+	params, ok := frame["params"].(map[string]any)
+	if !ok {
+		t.Fatalf("missing params: %v", frame)
+	}
+	diags, ok := params["diagnostics"].([]any)
+	if !ok {
+		t.Fatalf("missing diagnostics: %v", params)
+	}
+	if len(diags) != 0 {
+		combined, _ := json.Marshal(diags)
+		t.Errorf("expected the /age diagnostic to be suppressed, got: %s", combined)
+	}
+}

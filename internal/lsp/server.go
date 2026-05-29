@@ -319,6 +319,7 @@ func (s *Server) publishWith(notify glsp.NotifyFunc, d *document.Document) {
 	}
 
 	diags = append(diags, s.renderedDiagnosticsFor(d.URI)...)
+	diags = diagnostics.ParseSuppressions(d.Text).Filter(diags)
 	v := protocol.UInteger(d.Version)
 	notify(protocol.ServerTextDocumentPublishDiagnostics, protocol.PublishDiagnosticsParams{
 		URI:         d.URI,

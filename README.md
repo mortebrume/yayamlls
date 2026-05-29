@@ -18,20 +18,19 @@ override in `.yamlls.yaml` to point elsewhere. 404s are silently skipped.
 
 ## vs. redhat/yaml-language-server
 
-|                                                | yamlls                                       | redhat/yaml-language-server                                  |
-| ---------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------ |
-| Runtime                                        | static Go binary                             | Node.js ≥ 12                                                 |
-| Diagnostics, completion, hover                 | yes                                          | yes                                                          |
-| Symbols, folding, links, code actions          | yes                                          | yes                                                          |
-| Code lens                                      | rendered output, diff                        | none                                                         |
-| Per-doc schema in multi-doc files              | dynamic, per `---` block from apiVersion+kind | pre-declared ordered list via `schemaSequence`              |
-| Kubernetes auto-detect                         | URL template from apiVersion+kind            | `yaml.kubernetesCRDStore` ([datreeio/CRDs-catalog][datree])  |
-| Workspace config file                          | `.yamlls.yaml`                               | editor settings only                                         |
-| Flux `HelmRelease` / `Kustomization` rendering | via [flate][flate]                           | no                                                           |
-| Formatting                                     | no                                           | yes (Prettier)                                               |
-| Custom YAML tags (`!Ref`, …)                   | no                                           | yes                                                          |
-| Diagnostic suppression comments                | no                                           | yes                                                          |
-| JSON Schema drafts                             | 04, 06, 07, 2019-09, 2020-12                 | 04, 07, 2019-09, 2020-12                                     |
+|                                                | yamlls                            | redhat/yaml-language-server                                 |
+| ---------------------------------------------- | --------------------------------- | ----------------------------------------------------------- |
+| Runtime                                        | static Go binary                  | Node.js ≥ 12                                                |
+| Diagnostics, completion, hover                 | yes                               | yes                                                         |
+| Symbols, folding, links, code actions          | yes                               | yes                                                         |
+| Code lens                                      | rendered output, diff             | none                                                        |
+| Kubernetes auto-detect                         | URL template from apiVersion+kind | `yaml.kubernetesCRDStore` ([datreeio/CRDs-catalog][datree]) |
+| Workspace config file                          | `.yamlls.yaml`                    | editor settings only                                        |
+| Flux `HelmRelease` / `Kustomization` rendering | via [flate][flate]                | no                                                          |
+| Formatting                                     | no                                | yes (Prettier)                                              |
+| Custom YAML tags (`!Ref`, …)                   | no                                | yes                                                         |
+| Diagnostic suppression comments                | yes (`# yamlls-disable…`)         | yes                                                         |
+| JSON Schema drafts                             | 04, 06, 07, 2019-09, 2020-12      | 04, 07, 2019-09, 2020-12                                    |
 
 [datree]: https://github.com/datreeio/CRDs-catalog
 
@@ -117,9 +116,9 @@ it via **zed: install dev extension**). Since Zed bundles its own
 
 ```jsonc
 {
-  "languages": {
-    "YAML": { "language_servers": ["yamlls", "!yaml-language-server"] }
-  }
+    "languages": {
+        "YAML": { "language_servers": ["yamlls", "!yaml-language-server"] },
+    },
 }
 ```
 
@@ -131,17 +130,17 @@ allowed`), so the settings-only alternative is to override the bundled
 ```jsonc
 // ~/.config/zed/settings.json
 {
-  "lsp": {
-    "yaml-language-server": {
-      "binary": {
-        "ignore_system_version": true,
-        "path": "yamlls"
-      },
-      "initialization_options": {
-        "catalog": true
-      }
-    }
-  }
+    "lsp": {
+        "yaml-language-server": {
+            "binary": {
+                "ignore_system_version": true,
+                "path": "yamlls",
+            },
+            "initialization_options": {
+                "catalog": true,
+            },
+        },
+    },
 }
 ```
 
@@ -173,10 +172,10 @@ yamlls --log-file /tmp/yamlls.log -v 2
 
 ```yaml
 schemas:
-  "https://json.schemastore.org/github-workflow.json":
-    - ".github/workflows/*.yml"
-  "./schemas/local.json":
-    - "k8s/**/*.yaml"
+    "https://json.schemastore.org/github-workflow.json":
+        - ".github/workflows/*.yml"
+    "./schemas/local.json":
+        - "k8s/**/*.yaml"
 
 catalog: true
 catalogUrl: ""
@@ -199,6 +198,27 @@ See [`.yamlls.yaml.example`](.yamlls.yaml.example) for a copyable starter.
 Same shape works via `initializationOptions` or
 `workspace/didChangeConfiguration`. Precedence (low → high):
 `.yamlls.yaml` → `initializationOptions` → `didChangeConfiguration`.
+
+## Suppressing diagnostics
+
+Comments mute diagnostics so the language server stops reporting them:
+
+```yaml
+age: not-a-number  # yamlls-disable-line
+
+# yamlls-disable-line
+age: not-a-number
+
+# yamlls-disable
+foo: bad
+bar: also-bad
+# yamlls-enable
+```
+
+- `# yamlls-disable-line` — trailing a value, suppresses that line; on its
+  own line, suppresses the line below.
+- `# yamlls-disable` / `# yamlls-enable` — suppress every line in between.
+- `# yamlls-disable-file` — suppress the whole file (place it anywhere).
 
 ## Capabilities
 
