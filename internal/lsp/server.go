@@ -56,6 +56,7 @@ func New(version string, registry *render.Registry) *Server {
 		version:          version,
 	}
 	s.pipeline = render.NewPipeline(registry, s)
+	s.resolver.SetReloadHook(s.republishOpen)
 	s.handler = &protocol.Handler{
 		Initialize:    s.initialize,
 		Initialized:   s.initialized,
@@ -230,6 +231,23 @@ func (s *Server) Notify(uri string, out *render.RenderedOutput, err error) {
 		return
 	}
 	s.publishWith(notify, d)
+}
+
+// republishOpen recomputes diagnostics for every open document. Used as the
+// resolver's reload hook so docs resolved via the background-loaded catalog
+// get their diagnostics once it becomes available.
+func (s *Server) republishOpen() {
+	s.connMu.Lock()
+	notify := s.connNotify
+	s.connMu.Unlock()
+	if notify == nil {
+		return
+	}
+	for _, uri := range s.docs.AllURIs() {
+		if d, ok := s.docs.Get(uri); ok {
+			s.publishWith(notify, d)
+		}
+	}
 }
 
 func (s *Server) captureNotify(ctx *glsp.Context) {

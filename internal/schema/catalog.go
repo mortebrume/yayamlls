@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -26,6 +27,7 @@ type Catalog struct {
 	Client *http.Client
 
 	once    sync.Once
+	loaded  atomic.Bool
 	loadErr error
 	entries []catalogEntry
 }
@@ -40,12 +42,24 @@ func NewCatalog(url string) *Catalog {
 	}
 }
 
+// Load fetches the catalog once, in the background, so no LSP request
+// goroutine ever blocks on the network. onLoaded, if non-nil, runs after
+// the fetch completes so the caller can refresh results that depend on it.
+func (c *Catalog) Load(onLoaded func()) {
+	go c.once.Do(func() {
+		c.load()
+		c.loaded.Store(true)
+		if onLoaded != nil {
+			onLoaded()
+		}
+	})
+}
+
+// Match returns the schema URL for docPath, or "" if the catalog has not
+// finished loading yet — it never blocks. A later request matches once the
+// background Load completes.
 func (c *Catalog) Match(docPath string) string {
-	if docPath == "" {
-		return ""
-	}
-	c.once.Do(c.load)
-	if c.loadErr != nil {
+	if docPath == "" || !c.loaded.Load() || c.loadErr != nil {
 		return ""
 	}
 	for _, e := range c.entries {

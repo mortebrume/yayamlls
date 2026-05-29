@@ -14,9 +14,10 @@ import (
 // apiVersion+kind detection is per-document and lives on K8sURLForNode
 // so multi-doc files with mixed kinds resolve correctly.
 type Resolver struct {
-	mu       sync.RWMutex
-	settings config.Settings
-	catalog  *Catalog
+	mu         sync.RWMutex
+	settings   config.Settings
+	catalog    *Catalog
+	reloadHook func()
 }
 
 func NewResolver() *Resolver {
@@ -25,16 +26,32 @@ func NewResolver() *Resolver {
 	return r
 }
 
+// SetReloadHook registers a callback invoked when an asynchronously loaded
+// catalog becomes available, so the server can re-publish diagnostics for
+// documents whose schema is resolved via the catalog.
+func (r *Resolver) SetReloadHook(fn func()) {
+	r.mu.Lock()
+	r.reloadHook = fn
+	r.mu.Unlock()
+}
+
 func (r *Resolver) SetSettings(s config.Settings) {
 	r.mu.Lock()
-	defer r.mu.Unlock()
 	r.settings = s
+	var toLoad *Catalog
 	if s.CatalogEnabled() {
 		if r.catalog == nil || r.catalog.URL != effectiveCatalogURL(s) {
 			r.catalog = NewCatalog(s.CatalogURL)
+			toLoad = r.catalog
 		}
 	} else {
 		r.catalog = nil
+	}
+	hook := r.reloadHook
+	r.mu.Unlock()
+
+	if toLoad != nil {
+		toLoad.Load(hook)
 	}
 }
 
@@ -50,15 +67,20 @@ func (r *Resolver) Resolve(text, docPath string) string {
 		return ref
 	}
 	r.mu.RLock()
-	defer r.mu.RUnlock()
-	if ref := matchSettings(r.settings.Schemas, docPath); ref != "" {
+	schemas := r.settings.Schemas
+	catalog := r.catalog
+	r.mu.RUnlock()
+
+	if ref := matchSettings(schemas, docPath); ref != "" {
 		return ref
 	}
 	if isYamllsConfigPath(docPath) {
 		return EmbeddedYamllsSchemaURL
 	}
-	if r.catalog != nil {
-		if ref := r.catalog.Match(docPath); ref != "" {
+	// Match never blocks: the catalog loads in the background, so this
+	// returns "" until it's ready rather than fetching under the read lock.
+	if catalog != nil {
+		if ref := catalog.Match(docPath); ref != "" {
 			return ref
 		}
 	}
