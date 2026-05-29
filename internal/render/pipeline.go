@@ -59,29 +59,43 @@ func (p *Pipeline) Schedule(doc *SourceDocument) {
 		return
 	}
 	hash := contentHash(doc.Text)
+
 	p.mu.Lock()
-	if hit, ok := p.cache[doc.URI]; ok && hit.hash == hash {
-		p.mu.Unlock()
-		p.sink.Notify(doc.URI, hit.out, hit.err)
-		return
-	}
+	// Supersede any pending or in-flight render for this URI: its content is
+	// now stale. Without this an older render can finish after a newer one
+	// and overwrite the current diagnostics with results for old text —
+	// which looks like diagnostics failing to update on edit.
 	if old := p.pending[doc.URI]; old != nil {
 		old.timer.Stop()
 		if old.cancel != nil {
 			old.cancel()
 		}
+		delete(p.pending, doc.URI)
+	}
+	if hit, ok := p.cache[doc.URI]; ok && hit.hash == hash {
+		p.mu.Unlock()
+		p.sink.Notify(doc.URI, hit.out, hit.err)
+		return
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	var self *pending
 	t := time.AfterFunc(p.debounce, func() {
 		defer cancel()
 		out, err := r.Render(ctx, doc)
 		p.mu.Lock()
+		// A newer Schedule may have replaced us while we rendered; if so,
+		// discard this result so the latest content always wins.
+		if p.pending[doc.URI] != self {
+			p.mu.Unlock()
+			return
+		}
 		p.cache[doc.URI] = cacheEntry{hash: hash, out: out, err: err}
 		delete(p.pending, doc.URI)
 		p.mu.Unlock()
 		p.sink.Notify(doc.URI, out, err)
 	})
-	p.pending[doc.URI] = &pending{timer: t, cancel: cancel}
+	self = &pending{timer: t, cancel: cancel}
+	p.pending[doc.URI] = self
 	p.mu.Unlock()
 }
 

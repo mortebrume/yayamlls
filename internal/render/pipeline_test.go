@@ -96,6 +96,49 @@ func TestPipeline_DebouncedRender(t *testing.T) {
 	}
 }
 
+// blockingRenderer echoes the scheduled text and sleeps, so a render can
+// still be in flight when the next Schedule supersedes it.
+type blockingRenderer struct {
+	delay time.Duration
+}
+
+func (b *blockingRenderer) Name() string                        { return "blocking" }
+func (b *blockingRenderer) Matches(*render.SourceDocument) bool { return true }
+func (b *blockingRenderer) Render(_ context.Context, doc *render.SourceDocument) (*render.RenderedOutput, error) {
+	time.Sleep(b.delay)
+	return &render.RenderedOutput{Provider: "blocking", Raw: []byte(doc.Text)}, nil
+}
+
+func TestPipeline_SupersededRenderIsDropped(t *testing.T) {
+	reg := render.NewRegistry()
+	reg.Register(&blockingRenderer{delay: 100 * time.Millisecond})
+	sink := newRecordingSink()
+	p := render.NewPipeline(reg, sink)
+	p.SetDebounce(time.Millisecond)
+
+	uri := "file:///tmp/x.yaml"
+	p.Schedule(&render.SourceDocument{URI: uri, Text: "old"})
+	time.Sleep(30 * time.Millisecond) // let the first render start
+	p.Schedule(&render.SourceDocument{URI: uri, Text: "new"})
+
+	select {
+	case <-sink.done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("pipeline never delivered")
+	}
+	// Give the superseded render time to (wrongly) deliver if it would.
+	time.Sleep(150 * time.Millisecond)
+
+	sink.mu.Lock()
+	defer sink.mu.Unlock()
+	if len(sink.got) != 1 {
+		t.Fatalf("expected exactly one delivery, got %d", len(sink.got))
+	}
+	if string(sink.got[0].Raw) != "new" {
+		t.Errorf("delivered stale content %q, want %q", sink.got[0].Raw, "new")
+	}
+}
+
 func TestPipeline_NoMatchingProvider(t *testing.T) {
 	reg := render.NewRegistry()
 	reg.Register(&fakeRenderer{name: "fake", matches: false})
