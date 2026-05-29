@@ -1,5 +1,42 @@
 # Changelog
 
+## [0.0.5](https://github.com/home-operations/yamlls/compare/0.0.4...0.0.5) (2026-05-29)
+
+
+### Features
+
+* handle cancelRequest ([6f4ccc7](https://github.com/home-operations/yamlls/commit/6f4ccc7418289b6eafd55eafe1d44a37420b0283))
+
+
+### Bug Fixes
+
+* **config:** carry kubernetes settings through Merge ([0709a67](https://github.com/home-operations/yamlls/commit/0709a6782c2918b23bd713abb653c0b4a442a4d6))
+* **diagnostics:** anchor YAML parse errors at their reported position ([98148d0](https://github.com/home-operations/yamlls/commit/98148d09cce3570f84a428ab763d442bee8875da))
+* **document:** count UTF-16 code units when applying incremental edits ([91c5074](https://github.com/home-operations/yamlls/commit/91c5074dbc27a94854d21ca30edddfa054e45068))
+* **document:** replace documents instead of mutating to avoid a render-goroutine data race ([9ff0002](https://github.com/home-operations/yamlls/commit/9ff00027260db33daf114c492c0c7e92ac56a2e0))
+* **flate:** guard binary resolution with the mutex to remove a data race ([1c90dad](https://github.com/home-operations/yamlls/commit/1c90dadc2de3be80402d07922a85a1a84872398c))
+* **lsp:** emit diagnostic and symbol ranges in UTF-16 columns ([33ebed3](https://github.com/home-operations/yamlls/commit/33ebed37d47eb57b2563e26e076403460bd421b8))
+* **lsp:** publish empty diagnostics array so clients clear stale entries ([96fd32f](https://github.com/home-operations/yamlls/commit/96fd32f08134c1661b9209cf2d6b508c87788036))
+* **lsp:** track workspace and override settings layers so a folder change preserves client config ([702fde9](https://github.com/home-operations/yamlls/commit/702fde973b5f5d48f7b8e8b9f0f1e76d5ea1dace))
+* **render:** bound the render cache per-URI and evict it on document close ([7520dfa](https://github.com/home-operations/yamlls/commit/7520dfaf5d5867fb5c9b9e0ac2dbfecd67886a72))
+* **render:** cancel the render context when the debounced render finishes ([87aa49a](https://github.com/home-operations/yamlls/commit/87aa49a561cb58e0f7705e690aaf737f2df156ad))
+* **render:** drop superseded renders so stale results can't overwrite fresh diagnostics ([72591c7](https://github.com/home-operations/yamlls/commit/72591c7235d1ceaf19c39c2e1915b8672af81370))
+* **render:** require a group boundary in MatchesKind to avoid over-matching ([953ec5b](https://github.com/home-operations/yamlls/commit/953ec5b349ddbed861fa1cc5e9be9897cbf5ccbe))
+* **render:** stay silent when the flate binary is not installed ([cce2192](https://github.com/home-operations/yamlls/commit/cce21929a73303fd8e205106cb0f610ea0e2b05d))
+* **schema:** bound schema fetches and release the store lock during compile ([49b55a0](https://github.com/home-operations/yamlls/commit/49b55a0982958989da52700a3d577f4025757adf))
+* **schema:** load the schema catalog in the background instead of on the request path ([555ae2c](https://github.com/home-operations/yamlls/commit/555ae2c6619a7399351bc29ce5672d94dbd340d4))
+* **schema:** lowercase {kind} and {version} placeholders per the documented contract ([ad2bf22](https://github.com/home-operations/yamlls/commit/ad2bf22c5fdd7ed6dbe096958ac524fdab9c8600))
+* **schema:** resolve patternProperties and recursive/dynamic refs during traversal ([e4ea274](https://github.com/home-operations/yamlls/commit/e4ea27432effa4764f06138fd288d27a5c0350c2))
+* **uri:** convert Windows file URIs and drive paths correctly ([a4b3be4](https://github.com/home-operations/yamlls/commit/a4b3be446643909969b17aba1e1971f0a0139ca6))
+* **yamlast:** build valid JSON pointers from goccy paths with quoted or slashed keys ([af2bdbc](https://github.com/home-operations/yamlls/commit/af2bdbcc13c1beadf496bb257d7000967248ff14))
+* **yamlast:** map cursor positions in UTF-16 and clamp past-end-of-line offsets ([624d44a](https://github.com/home-operations/yamlls/commit/624d44afc5c4966caa84e4e3d2e9b0775ce5ca97))
+* **yamlast:** resolve JSON pointers by AST traversal so numeric and dotted keys map correctly ([0fb1df9](https://github.com/home-operations/yamlls/commit/0fb1df95ca7a90a0caed491434b1d61cf478705b))
+
+
+### Styles
+
+* **lsp:** alias the uri import to avoid shadowing local variables ([df48e10](https://github.com/home-operations/yamlls/commit/df48e10860cea1fdff5f481f451a3db07a1577a4))
+
 ## [0.0.4](https://github.com/home-operations/yamlls/compare/0.0.3...0.0.4) (2026-05-24)
 
 
