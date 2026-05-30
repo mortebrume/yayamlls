@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/home-operations/yamlls/internal/render"
-	"github.com/home-operations/yamlls/internal/render/flate"
+	"github.com/home-operations/yayamlls/internal/render"
+	"github.com/home-operations/yayamlls/internal/render/flate"
 )
 
 func TestFlate_Configure_DisablesAndChangesBinary(t *testing.T) {

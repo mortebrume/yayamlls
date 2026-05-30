@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/home-operations/yamlls/internal/hover"
-	"github.com/home-operations/yamlls/internal/schema"
+	"github.com/home-operations/yayamlls/internal/hover"
+	"github.com/home-operations/yayamlls/internal/schema"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )
 

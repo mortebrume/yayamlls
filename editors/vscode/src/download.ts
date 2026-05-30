@@ -36,7 +36,7 @@ async function resolveVersion(repo: string, requested: string): Promise<string> 
   }
   const res = await fetch(
     `https://api.github.com/repos/${repo}/releases/latest`,
-    { headers: { Accept: "application/vnd.github+json", "User-Agent": "yamlls-vscode" } },
+    { headers: { Accept: "application/vnd.github+json", "User-Agent": "yayamlls-vscode" } },
   );
   if (!res.ok) {
     throw new Error(`GitHub API ${res.status} resolving latest ${repo} release`);
@@ -62,7 +62,7 @@ async function exists(p: string): Promise<boolean> {
  * the matching release asset into `storageDir` on first use (or version bump).
  *
  * @param repo  GitHub "owner/name"
- * @param name  binary/project name (also the asset prefix, e.g. "yamlls" / "flate")
+ * @param name  binary/project name (also the asset prefix, e.g. "yayamlls" / "flate")
  */
 export async function ensureBinary(
   storageDir: string,
@@ -80,11 +80,11 @@ export async function ensureBinary(
     return binaryPath;
   }
 
-  out.appendLine(`yamlls: downloading ${asset} (${version})`);
+  out.appendLine(`yayamlls: downloading ${asset} (${version})`);
   await fs.mkdir(versionDir, { recursive: true });
 
   const url = `https://github.com/${repo}/releases/download/${version}/${asset}`;
-  const res = await fetch(url, { headers: { "User-Agent": "yamlls-vscode" } });
+  const res = await fetch(url, { headers: { "User-Agent": "yayamlls-vscode" } });
   if (!res.ok || !res.body) {
     throw new Error(`download failed: ${res.status} ${url}`);
   }
@@ -110,6 +110,6 @@ export async function ensureBinary(
     }
   }
 
-  out.appendLine(`yamlls: installed ${binaryPath}`);
+  out.appendLine(`yayamlls: installed ${binaryPath}`);
   return binaryPath;
 }

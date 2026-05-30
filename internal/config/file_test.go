@@ -9,7 +9,7 @@ import (
 
 func TestLoadFile_Roundtrip(t *testing.T) {
 	dir := t.TempDir()
-	path := filepath.Join(dir, ".yamlls.yaml")
+	path := filepath.Join(dir, ".yayamlls.yaml")
 	body := `schemas:
   "./schemas/local.json":
     - "k8s/**/*.yaml"

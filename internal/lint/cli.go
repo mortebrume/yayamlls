@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/home-operations/yamlls/internal/config"
-	"github.com/home-operations/yamlls/internal/diagnostics"
-	"github.com/home-operations/yamlls/internal/schema"
-	"github.com/home-operations/yamlls/internal/uri"
+	"github.com/home-operations/yayamlls/internal/config"
+	"github.com/home-operations/yayamlls/internal/diagnostics"
+	"github.com/home-operations/yayamlls/internal/schema"
+	"github.com/home-operations/yayamlls/internal/uri"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )
 
@@ -26,22 +26,22 @@ func Run(argv []string, stdout, stderr io.Writer) int {
 	flags := flag.NewFlagSet("validate", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	var root string
-	flags.StringVar(&root, "root", "", "workspace root for .yamlls.yaml (default: auto-detect)")
+	flags.StringVar(&root, "root", "", "workspace root for .yayamlls.yaml (default: auto-detect)")
 	if err := flags.Parse(argv); err != nil {
 		return 2
 	}
 	if flags.NArg() == 0 {
-		_, _ = fmt.Fprintln(stderr, "usage: yamlls validate [--root dir] <file|dir>...")
+		_, _ = fmt.Fprintln(stderr, "usage: yayamlls validate [--root dir] <file|dir>...")
 		return 2
 	}
 
 	files, err := collectYAML(flags.Args())
 	if err != nil {
-		_, _ = fmt.Fprintf(stderr, "yamlls: %v\n", err)
+		_, _ = fmt.Fprintf(stderr, "yayamlls: %v\n", err)
 		return 2
 	}
 	if len(files) == 0 {
-		_, _ = fmt.Fprintln(stderr, "yamlls: no YAML files found")
+		_, _ = fmt.Fprintln(stderr, "yayamlls: no YAML files found")
 		return 2
 	}
 
@@ -50,7 +50,7 @@ func Run(argv []string, stdout, stderr io.Writer) int {
 	}
 	ws, err := config.LoadFromWorkspace(uri.FromPath(root))
 	if err != nil {
-		_, _ = fmt.Fprintf(stderr, "yamlls: %v\n", err)
+		_, _ = fmt.Fprintf(stderr, "yayamlls: %v\n", err)
 		return 2
 	}
 
@@ -105,7 +105,7 @@ type fileResult struct {
 func validateFile(path string, resolver *schema.Resolver, store *schema.Store) fileResult {
 	b, err := os.ReadFile(path)
 	if err != nil {
-		return fileResult{errLines: []string{"yamlls: " + err.Error()}, failed: true}
+		return fileResult{errLines: []string{"yayamlls: " + err.Error()}, failed: true}
 	}
 	text := string(b)
 	diags := Document(text, path, resolver, store)
@@ -155,7 +155,7 @@ func isYAML(p string) bool {
 	return ext == ".yaml" || ext == ".yml"
 }
 
-// findRoot walks up from the first file looking for .yamlls.yaml or a git
+// findRoot walks up from the first file looking for .yayamlls.yaml or a git
 // repository, mirroring how an editor picks the workspace root. It falls
 // back to the file's own directory.
 func findRoot(file string) string {

@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/home-operations/yamlls/internal/uri"
+	"github.com/home-operations/yayamlls/internal/uri"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	_ "github.com/santhosh-tekuri/jsonschema/v5/httploader"
 )

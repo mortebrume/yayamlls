@@ -37,7 +37,7 @@ func TestWorkspaceConfigFileFlowsThrough(t *testing.T) {
     - "data/**/*.yaml"
 catalog: false
 `
-	if err := os.WriteFile(filepath.Join(root, ".yamlls.yaml"), []byte(cfg), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(root, ".yayamlls.yaml"), []byte(cfg), 0o644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -93,7 +93,7 @@ catalog: false
 	params, _ := frame["params"].(map[string]any)
 	diags, _ := params["diagnostics"].([]any)
 	if len(diags) == 0 {
-		t.Fatalf("expected a diagnostic from .yamlls.yaml schema mapping, got none")
+		t.Fatalf("expected a diagnostic from .yayamlls.yaml schema mapping, got none")
 	}
 	combined, _ := json.Marshal(diags)
 	if !strings.Contains(string(combined), "/count") {

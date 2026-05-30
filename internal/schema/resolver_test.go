@@ -3,7 +3,7 @@ package schema
 import (
 	"testing"
 
-	"github.com/home-operations/yamlls/internal/config"
+	"github.com/home-operations/yayamlls/internal/config"
 )
 
 func TestResolver_ModelineBeatsSettings(t *testing.T) {

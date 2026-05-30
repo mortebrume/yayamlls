@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/home-operations/yamlls/internal/diagnostics"
-	"github.com/home-operations/yamlls/internal/render"
-	"github.com/home-operations/yamlls/internal/schema"
-	"github.com/home-operations/yamlls/internal/yamlast"
+	"github.com/home-operations/yayamlls/internal/diagnostics"
+	"github.com/home-operations/yayamlls/internal/render"
+	"github.com/home-operations/yayamlls/internal/schema"
+	"github.com/home-operations/yayamlls/internal/yamlast"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )

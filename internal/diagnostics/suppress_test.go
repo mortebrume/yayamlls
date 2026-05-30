@@ -3,7 +3,7 @@ package diagnostics_test
 import (
 	"testing"
 
-	"github.com/home-operations/yamlls/internal/diagnostics"
+	"github.com/home-operations/yayamlls/internal/diagnostics"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )
 
@@ -16,27 +16,27 @@ func TestParseSuppressions(t *testing.T) {
 	}{
 		{
 			name:       "trailing disable-line suppresses its own line",
-			text:       "name: Alice\nage: bad  # yamlls-disable-line\n",
+			text:       "name: Alice\nage: bad  # yayamlls-disable-line\n",
 			suppressed: map[uint32]bool{0: false, 1: true},
 		},
 		{
 			name:       "standalone disable-line suppresses the next line",
-			text:       "name: Alice\n# yamlls-disable-line\nage: bad\n",
+			text:       "name: Alice\n# yayamlls-disable-line\nage: bad\n",
 			suppressed: map[uint32]bool{0: false, 1: false, 2: true},
 		},
 		{
 			name:       "block disable/enable suppresses the lines between",
-			text:       "a: 1\n# yamlls-disable\nb: 2\nc: 3\n# yamlls-enable\nd: 4\n",
+			text:       "a: 1\n# yayamlls-disable\nb: 2\nc: 3\n# yayamlls-enable\nd: 4\n",
 			suppressed: map[uint32]bool{0: false, 2: true, 3: true, 5: false},
 		},
 		{
 			name:       "disable-file suppresses every line",
-			text:       "# yamlls-disable-file\na: 1\nb: 2\n",
+			text:       "# yayamlls-disable-file\na: 1\nb: 2\n",
 			suppressed: map[uint32]bool{0: true, 1: true, 2: true, 99: true},
 		},
 		{
 			name:       "hash inside a value is not a directive",
-			text:       "url: http://x#yamlls-disable-line\nbad: 1\n",
+			text:       "url: http://x#yayamlls-disable-line\nbad: 1\n",
 			suppressed: map[uint32]bool{0: false, 1: false},
 		},
 		{
@@ -58,7 +58,7 @@ func TestParseSuppressions(t *testing.T) {
 }
 
 func TestSuppressor_Filter(t *testing.T) {
-	text := "a: 1\nb: 2  # yamlls-disable-line\nc: 3\n"
+	text := "a: 1\nb: 2  # yayamlls-disable-line\nc: 3\n"
 	diag := func(line uint32) protocol.Diagnostic {
 		return protocol.Diagnostic{Range: protocol.Range{Start: protocol.Position{Line: line}}}
 	}

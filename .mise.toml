@@ -31,19 +31,19 @@ depends = ["fmt", "vet"]
 run = "go test ./... -coverprofile cover.out"
 
 [tasks.build]
-description = "Build yamlls binary"
+description = "Build yayamlls binary"
 depends = ["fmt", "vet"]
 run = '''
 version="${VERSION:-$(git describe --tags --always 2>/dev/null || echo dev)}"
 commit="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
 mkdir -p bin
-go build -ldflags "-X main.version=$version -X main.commit=$commit" -o bin/yamlls ./cmd/yamlls
+go build -ldflags "-X main.version=$version -X main.commit=$commit" -o bin/yayamlls ./cmd/yayamlls
 '''
 
 [tasks.run]
-description = "Run yamlls from source (rare — LSP clients spawn the binary)"
+description = "Run yayamlls from source (rare — LSP clients spawn the binary)"
 depends = ["fmt", "vet"]
-run = "go run ./cmd/yamlls"
+run = "go run ./cmd/yayamlls"
 
 [tasks.zizmor]
 description = "Audit GitHub Actions workflows"

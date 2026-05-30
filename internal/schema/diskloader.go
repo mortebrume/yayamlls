@@ -24,13 +24,13 @@ var CacheDir = defaultCacheDir()
 
 func defaultCacheDir() string {
 	if d := os.Getenv("XDG_CACHE_HOME"); d != "" {
-		return filepath.Join(d, "yamlls", "schemas")
+		return filepath.Join(d, "yayamlls", "schemas")
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return filepath.Join(os.TempDir(), "yamlls", "schemas")
+		return filepath.Join(os.TempDir(), "yayamlls", "schemas")
 	}
-	return filepath.Join(home, ".cache", "yamlls", "schemas")
+	return filepath.Join(home, ".cache", "yayamlls", "schemas")
 }
 
 // fetchTimeout bounds a single schema fetch. httploader's default client

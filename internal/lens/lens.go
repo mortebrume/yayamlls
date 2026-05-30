@@ -4,14 +4,14 @@ package lens
 import (
 	"strings"
 
-	"github.com/home-operations/yamlls/internal/schema"
-	"github.com/home-operations/yamlls/internal/yamlast"
+	"github.com/home-operations/yayamlls/internal/schema"
+	"github.com/home-operations/yayamlls/internal/yamlast"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )
 
 const (
-	commandShowRendered     = "yamlls.showRendered"
-	commandShowRenderedDiff = "yamlls.showRenderedDiff"
+	commandShowRendered     = "yayamlls.showRendered"
+	commandShowRenderedDiff = "yayamlls.showRenderedDiff"
 )
 
 func Lenses(uri, text string) []protocol.CodeLens {

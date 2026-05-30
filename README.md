@@ -1,4 +1,4 @@
-# yamlls
+# yayamlls
 
 YAML language server in Go. Schema-driven diagnostics, completion, and
 hover; pluggable rendering for Flux `HelmRelease` and `Kustomization`
@@ -7,29 +7,29 @@ sources via [home-operations/flate][flate].
 Per-document schema resolution, highest priority first:
 
 1. in-file modeline (`# yaml-language-server: $schema=…`)
-2. workspace `schemas:` glob in `.yamlls.yaml`
+2. workspace `schemas:` glob in `.yayamlls.yaml`
 3. JSON Schema Store catalog (filename match)
 4. Kubernetes `apiVersion`+`kind` → `kubernetes.schemaUrl` template
 
 Multi-doc files validate each document against its own schema. The
 default `kubernetes.schemaUrl` is
 `https://k8s-schemas.home-operations.com/{groupSeg}{kindLower}_{versionLower}.json`;
-override in `.yamlls.yaml` to point elsewhere. 404s are silently skipped.
+override in `.yayamlls.yaml` to point elsewhere. 404s are silently skipped.
 
 ## vs. redhat/yaml-language-server
 
-|                                                | yamlls                            | redhat/yaml-language-server                                 |
+|                                                | yayamlls                            | redhat/yaml-language-server                                 |
 | ---------------------------------------------- | --------------------------------- | ----------------------------------------------------------- |
 | Runtime                                        | static Go binary                  | Node.js ≥ 12                                                |
 | Diagnostics, completion, hover                 | yes                               | yes                                                         |
 | Symbols, folding, links, code actions          | yes                               | yes                                                         |
 | Code lens                                      | rendered output, diff             | none                                                        |
 | Kubernetes auto-detect                         | URL template from apiVersion+kind | `yaml.kubernetesCRDStore` ([datreeio/CRDs-catalog][datree]) |
-| Workspace config file                          | `.yamlls.yaml`                    | editor settings only                                        |
+| Workspace config file                          | `.yayamlls.yaml`                    | editor settings only                                        |
 | Flux `HelmRelease` / `Kustomization` rendering | via [flate][flate]                | no                                                          |
 | Formatting                                     | no                                | yes (Prettier)                                              |
 | Custom YAML tags (`!Ref`, …)                   | no                                | yes                                                         |
-| Diagnostic suppression comments                | yes (`# yamlls-disable…`)         | yes                                                         |
+| Diagnostic suppression comments                | yes (`# yayamlls-disable…`)         | yes                                                         |
 | JSON Schema drafts                             | 04, 06, 07, 2019-09, 2020-12      | 04, 07, 2019-09, 2020-12                                    |
 
 [datree]: https://github.com/datreeio/CRDs-catalog
@@ -39,17 +39,17 @@ override in `.yamlls.yaml` to point elsewhere. 404s are silently skipped.
 Homebrew:
 
 ```sh
-brew install home-operations/tap/yamlls
+brew install home-operations/tap/yayamlls
 ```
 
 Go:
 
 ```sh
-go install github.com/home-operations/yamlls/cmd/yamlls@latest
+go install github.com/home-operations/yayamlls/cmd/yayamlls@latest
 ```
 
 Prebuilt binaries for linux/darwin/windows (amd64+arm64) are attached to
-each [GitHub release](https://github.com/home-operations/yamlls/releases).
+each [GitHub release](https://github.com/home-operations/yayamlls/releases).
 
 For Flux rendering:
 
@@ -59,11 +59,11 @@ go install github.com/home-operations/flate/cmd/flate@latest
 
 ## Editor setup
 
-`yamlls` speaks LSP 3.16 over stdio. Put the binary on `$PATH` or pass
+`yayamlls` speaks LSP 3.16 over stdio. Put the binary on `$PATH` or pass
 an absolute path.
 
 Packaged extensions for **VS Code** and **Zed** live in [`editors/`](editors);
-they download the matching `yamlls` (and `flate`) release binary automatically.
+they download the matching `yayamlls` (and `flate`) release binary automatically.
 The snippets below are for editors with built-in LSP support.
 
 ### Neovim (nvim-lspconfig)
@@ -72,10 +72,10 @@ The snippets below are for editors with built-in LSP support.
 local lspconfig = require("lspconfig")
 local configs = require("lspconfig.configs")
 
-if not configs.yamlls then
-  configs.yamlls = {
+if not configs.yayamlls then
+  configs.yayamlls = {
     default_config = {
-      cmd = { "yamlls" },
+      cmd = { "yayamlls" },
       filetypes = { "yaml" },
       root_dir = lspconfig.util.find_git_ancestor,
       single_file_support = true,
@@ -83,14 +83,14 @@ if not configs.yamlls then
   }
 end
 
-lspconfig.yamlls.setup({})
+lspconfig.yayamlls.setup({})
 ```
 
 ### VSCode
 
 Use the extension in [`editors/vscode`](editors/vscode) — it downloads the
-`yamlls` binary (and `flate` for Flux rendering) on first activation, and
-exposes `yamlls.*` settings. To build and run it locally, press <kbd>F5</kbd>
+`yayamlls` binary (and `flate` for Flux rendering) on first activation, and
+exposes `yayamlls.*` settings. To build and run it locally, press <kbd>F5</kbd>
 from that directory; to package a `.vsix`, run `vsce package`. See its
 [README](editors/vscode/README.md) for settings and publishing.
 
@@ -98,32 +98,32 @@ from that directory; to package a `.vsix`, run `vsce package`. See its
 
 ```toml
 # ~/.config/helix/languages.toml
-[language-server.yamlls]
-command = "yamlls"
+[language-server.yayamlls]
+command = "yayamlls"
 
 [[language]]
 name = "yaml"
-language-servers = ["yamlls"]
+language-servers = ["yayamlls"]
 ```
 
 ### Zed
 
-Use the extension in [`editors/zed`](editors/zed) — it registers `yamlls` as a
+Use the extension in [`editors/zed`](editors/zed) — it registers `yayamlls` as a
 language server for the YAML language and downloads the binary for you (install
 it via **zed: install dev extension**). Since Zed bundles its own
-`yaml-language-server`, make `yamlls` the only one in
+`yaml-language-server`, make `yayamlls` the only one in
 `~/.config/zed/settings.json`:
 
 ```jsonc
 {
     "languages": {
-        "YAML": { "language_servers": ["yamlls", "!yaml-language-server"] },
+        "YAML": { "language_servers": ["yayamlls", "!yaml-language-server"] },
     },
 }
 ```
 
 Without the extension, Zed's `lsp` key only accepts known language-server
-identifiers (`yamlls` as a top-level key triggers `Property yamlls is not
+identifiers (`yayamlls` as a top-level key triggers `Property yayamlls is not
 allowed`), so the settings-only alternative is to override the bundled
 `yaml-language-server` binary:
 
@@ -134,7 +134,7 @@ allowed`), so the settings-only alternative is to override the bundled
         "yaml-language-server": {
             "binary": {
                 "ignore_system_version": true,
-                "path": "yamlls",
+                "path": "yayamlls",
             },
             "initialization_options": {
                 "catalog": true,
@@ -149,11 +149,11 @@ allowed`), so the settings-only alternative is to override the bundled
 With [flate][flate] installed, opening a `HelmRelease` or
 `Kustomization` surfaces schema violations on rendered manifests as
 `[rendered <kind>/<name> @ <jsonptr>]` on the source document. The
-`yamlls.showRendered` command returns the rendered YAML; in Neovim:
+`yayamlls.showRendered` command returns the rendered YAML; in Neovim:
 
 ```lua
 vim.lsp.buf.execute_command({
-  command = "yamlls.showRendered",
+  command = "yayamlls.showRendered",
   arguments = { vim.uri_from_bufnr(0) },
 })
 ```
@@ -161,14 +161,14 @@ vim.lsp.buf.execute_command({
 ### Debugging
 
 ```sh
-yamlls --log-file /tmp/yamlls.log -v 2
+yayamlls --log-file /tmp/yayamlls.log -v 2
 ```
 
 `-v 0` is silent (default), `1` is info, `2+` is debug.
 
 ## Configuration
 
-`.yamlls.yaml` in the workspace root:
+`.yayamlls.yaml` in the workspace root:
 
 ```yaml
 schemas:
@@ -193,32 +193,32 @@ catalogUrl: ""
 #     binary: flate
 ```
 
-See [`.yamlls.yaml.example`](.yamlls.yaml.example) for a copyable starter.
+See [`.yayamlls.yaml.example`](.yayamlls.yaml.example) for a copyable starter.
 
 Same shape works via `initializationOptions` or
 `workspace/didChangeConfiguration`. Precedence (low → high):
-`.yamlls.yaml` → `initializationOptions` → `didChangeConfiguration`.
+`.yayamlls.yaml` → `initializationOptions` → `didChangeConfiguration`.
 
 ## Suppressing diagnostics
 
 Comments mute diagnostics so the language server stops reporting them:
 
 ```yaml
-age: not-a-number  # yamlls-disable-line
+age: not-a-number  # yayamlls-disable-line
 
-# yamlls-disable-line
+# yayamlls-disable-line
 age: not-a-number
 
-# yamlls-disable
+# yayamlls-disable
 foo: bad
 bar: also-bad
-# yamlls-enable
+# yayamlls-enable
 ```
 
-- `# yamlls-disable-line` — trailing a value, suppresses that line; on its
+- `# yayamlls-disable-line` — trailing a value, suppresses that line; on its
   own line, suppresses the line below.
-- `# yamlls-disable` / `# yamlls-enable` — suppress every line in between.
-- `# yamlls-disable-file` — suppress the whole file (place it anywhere).
+- `# yayamlls-disable` / `# yayamlls-enable` — suppress every line in between.
+- `# yayamlls-disable-file` — suppress the whole file (place it anywhere).
 
 ## Capabilities
 
@@ -229,35 +229,35 @@ documentLink, documentSymbol, codeAction (enum quick-fix), codeLens.
 
 ## Commands
 
-- `yamlls.showRendered <uri>` — rendered output for a Flux source.
-- `yamlls.showRenderedDiff <uri>` — unified diff between the open-time
+- `yayamlls.showRendered <uri>` — rendered output for a Flux source.
+- `yayamlls.showRenderedDiff <uri>` — unified diff between the open-time
   render and the current render.
 
 ## CLI flags
 
 ```
-yamlls --version              print version and exit
-yamlls --log-file PATH        append logs to PATH instead of stderr
-yamlls -v N                   log verbosity (0=silent, 1=info, 2+=debug)
+yayamlls --version              print version and exit
+yayamlls --log-file PATH        append logs to PATH instead of stderr
+yayamlls -v N                   log verbosity (0=silent, 1=info, 2+=debug)
 ```
 
 ## Validate (one-shot, for CI)
 
-`yamlls validate` (alias `lint`) checks files without an editor, resolving
-schemas the same way the server does (modeline, `.yamlls.yaml` globs,
-catalog, Kubernetes auto-detect) and honouring `# yamlls-disable…`
+`yayamlls validate` (alias `lint`) checks files without an editor, resolving
+schemas the same way the server does (modeline, `.yayamlls.yaml` globs,
+catalog, Kubernetes auto-detect) and honouring `# yayamlls-disable…`
 comments. Directory arguments are walked for `*.yaml`/`*.yml`.
 
 ```sh
-yamlls validate deploy.yaml            # one file
-yamlls validate k8s/                   # walk a directory
-yamlls validate --root . manifests/    # pin the workspace root for .yamlls.yaml
+yayamlls validate deploy.yaml            # one file
+yayamlls validate k8s/                   # walk a directory
+yayamlls validate --root . manifests/    # pin the workspace root for .yayamlls.yaml
 ```
 
 Diagnostics print as `path:line:col: severity: message`. The exit code is
 `1` when any error-severity diagnostic is reported, `2` on a usage or I/O
 error, `0` otherwise. The workspace root is auto-detected (nearest
-`.yamlls.yaml` or `.git`) unless `--root` is given.
+`.yayamlls.yaml` or `.git`) unless `--root` is given.
 
 ## Development
 

@@ -3,7 +3,7 @@ package render_test
 import (
 	"testing"
 
-	"github.com/home-operations/yamlls/internal/render"
+	"github.com/home-operations/yayamlls/internal/render"
 )
 
 func TestMatchesKind_RequiresGroupBoundary(t *testing.T) {

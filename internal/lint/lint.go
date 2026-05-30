@@ -1,15 +1,15 @@
 // Package lint validates YAML documents against their resolved schemas,
 // independent of the LSP transport. Both the language server and the
-// `yamlls validate` command share Document so they report identically.
+// `yayamlls validate` command share Document so they report identically.
 package lint
 
 import (
 	"sync"
 
 	"github.com/goccy/go-yaml/ast"
-	"github.com/home-operations/yamlls/internal/diagnostics"
-	"github.com/home-operations/yamlls/internal/schema"
-	"github.com/home-operations/yamlls/internal/yamlast"
+	"github.com/home-operations/yayamlls/internal/diagnostics"
+	"github.com/home-operations/yayamlls/internal/schema"
+	"github.com/home-operations/yayamlls/internal/yamlast"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )
 
@@ -21,7 +21,7 @@ const docConcurrency = 8
 // Document validates a single file's text. path is the on-disk path used
 // for relative schema resolution. It returns the parse error (if any),
 // per-document schema violations, and one schema-load failure per
-// user-intended ref. yamlls-disable suppressions are NOT applied here —
+// user-intended ref. yayamlls-disable suppressions are NOT applied here —
 // callers filter, so the LSP server can suppress rendered diagnostics in
 // the same pass.
 func Document(text, path string, resolver *schema.Resolver, store *schema.Store) []protocol.Diagnostic {

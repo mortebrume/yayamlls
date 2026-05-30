@@ -6,8 +6,8 @@ import (
 
 	yaml "github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
-	"github.com/home-operations/yamlls/internal/schema"
-	"github.com/home-operations/yamlls/internal/yamlast"
+	"github.com/home-operations/yayamlls/internal/schema"
+	"github.com/home-operations/yayamlls/internal/yamlast"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )
 

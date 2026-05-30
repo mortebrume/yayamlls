@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/home-operations/yamlls/internal/lint"
+	"github.com/home-operations/yayamlls/internal/lint"
 )
 
 const personSchema = `{
@@ -21,13 +21,13 @@ const personSchema = `{
   "additionalProperties": false
 }`
 
-// setupWorkspace writes a catalog-disabled .yamlls.yaml plus a person.json
+// setupWorkspace writes a catalog-disabled .yayamlls.yaml plus a person.json
 // schema, so the linter resolves offline. It returns the root dir.
 func setupWorkspace(t *testing.T) string {
 	t.Helper()
 	root := t.TempDir()
 	mustWrite(t, filepath.Join(root, "person.json"), personSchema)
-	mustWrite(t, filepath.Join(root, ".yamlls.yaml"), "catalog: false\n")
+	mustWrite(t, filepath.Join(root, ".yayamlls.yaml"), "catalog: false\n")
 	return root
 }
 
@@ -80,7 +80,7 @@ func TestRun_InvalidDocReportsAndExitsOne(t *testing.T) {
 func TestRun_SuppressedDocExitsZero(t *testing.T) {
 	root := setupWorkspace(t)
 	doc := filepath.Join(root, "suppressed.yaml")
-	mustWrite(t, doc, "# yaml-language-server: $schema=./person.json\nname: Alice\nage: \"thirty\"  # yamlls-disable-line\n")
+	mustWrite(t, doc, "# yaml-language-server: $schema=./person.json\nname: Alice\nage: \"thirty\"  # yayamlls-disable-line\n")
 
 	code, stdout, _ := run(t, root, doc)
 	if code != 0 {

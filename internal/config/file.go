@@ -9,12 +9,12 @@ import (
 	"strings"
 
 	yaml "github.com/goccy/go-yaml"
-	"github.com/home-operations/yamlls/internal/uri"
+	"github.com/home-operations/yayamlls/internal/uri"
 )
 
-const WorkspaceConfigFile = ".yamlls.yaml"
+const WorkspaceConfigFile = ".yayamlls.yaml"
 
-// LoadFromWorkspace reads `.yamlls.yaml` from the workspace root. Relative
+// LoadFromWorkspace reads `.yayamlls.yaml` from the workspace root. Relative
 // schema paths in the file are anchored at the workspace root so they
 // don't resolve from the open document's directory.
 func LoadFromWorkspace(rootURI string) (Settings, error) {

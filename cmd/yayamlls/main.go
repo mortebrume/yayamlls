@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/home-operations/yamlls/internal/lint"
-	"github.com/home-operations/yamlls/internal/lsp"
-	"github.com/home-operations/yamlls/internal/render"
-	"github.com/home-operations/yamlls/internal/render/flate"
+	"github.com/home-operations/yayamlls/internal/lint"
+	"github.com/home-operations/yayamlls/internal/lsp"
+	"github.com/home-operations/yayamlls/internal/render"
+	"github.com/home-operations/yayamlls/internal/render/flate"
 	"github.com/tliron/commonlog"
 	_ "github.com/tliron/commonlog/simple"
 	"github.com/tliron/glsp/server"
@@ -58,7 +58,7 @@ func main() {
 	registry.Register(flate.New())
 
 	s := lsp.New(version, registry)
-	srv := server.NewServer(s.Handler(), "yamlls", false)
+	srv := server.NewServer(s.Handler(), "yayamlls", false)
 	if err := srv.RunStdio(); err != nil {
 		fmt.Fprintf(os.Stderr, "server stopped with error: %v\n", err)
 		os.Exit(1)

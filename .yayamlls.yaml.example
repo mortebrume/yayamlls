@@ -1,4 +1,4 @@
-# Drop this file (renamed to `.yamlls.yaml`) at the root of your repo.
+# Drop this file (renamed to `.yayamlls.yaml`) at the root of your repo.
 
 schemas:
   "https://json.schemastore.org/github-workflow.json":

@@ -5,8 +5,8 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/home-operations/yamlls/internal/completion"
-	"github.com/home-operations/yamlls/internal/schema"
+	"github.com/home-operations/yayamlls/internal/completion"
+	"github.com/home-operations/yayamlls/internal/schema"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )
 

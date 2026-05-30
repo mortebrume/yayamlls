@@ -226,7 +226,7 @@ func TestSuppressesDiagnosticWithDisableLine(t *testing.T) {
 	docPath := filepath.Join(repo, "test", "fixtures", "person-invalid.yaml")
 	uri := "file://" + docPath
 	// Same invalid age as TestPublishesSchemaDiagnostics, but suppressed.
-	body := "# yaml-language-server: $schema=./schemas/person.json\nname: Alice\nage: \"thirty\"  # yamlls-disable-line\n"
+	body := "# yaml-language-server: $schema=./schemas/person.json\nname: Alice\nage: \"thirty\"  # yayamlls-disable-line\n"
 
 	if err := conn.notify("textDocument/didOpen", map[string]any{
 		"textDocument": map[string]any{

@@ -20,11 +20,11 @@ func buildBinary(t *testing.T) string {
 	t.Helper()
 	_, thisFile, _, _ := runtime.Caller(0)
 	repo := filepath.Dir(filepath.Dir(thisFile))
-	bin := filepath.Join(t.TempDir(), "yamlls")
+	bin := filepath.Join(t.TempDir(), "yayamlls")
 	if runtime.GOOS == "windows" {
 		bin += ".exe"
 	}
-	cmd := exec.Command("go", "build", "-o", bin, "./cmd/yamlls")
+	cmd := exec.Command("go", "build", "-o", bin, "./cmd/yayamlls")
 	cmd.Dir = repo
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -149,7 +149,7 @@ func TestInitializeHandshake(t *testing.T) {
 		t.Errorf("textDocumentSync capability not advertised; caps=%v", caps)
 	}
 	info, ok := result["serverInfo"].(map[string]any)
-	if !ok || info["name"] != "yamlls" {
+	if !ok || info["name"] != "yayamlls" {
 		t.Errorf("serverInfo missing or wrong: %v", result["serverInfo"])
 	}
 }

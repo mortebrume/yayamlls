@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/goccy/go-yaml/parser"
-	"github.com/home-operations/yamlls/internal/render"
+	"github.com/home-operations/yayamlls/internal/render"
 )
 
 type fakeRenderer struct {

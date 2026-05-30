@@ -14,15 +14,15 @@ import {
 } from "vscode-languageclient/node";
 import { ensureBinary } from "./download";
 
-const YAMLLS_REPO = "home-operations/yamlls";
+const YAMLLS_REPO = "home-operations/yayamlls";
 const FLATE_REPO = "home-operations/flate";
 
 let client: LanguageClient | undefined;
 let output: OutputChannel;
 
-/** Build the server's initializationOptions from `yamlls.*` settings. */
+/** Build the server's initializationOptions from `yayamlls.*` settings. */
 function initializationOptions(flatePath: string | undefined) {
-  const cfg = workspace.getConfiguration("yamlls");
+  const cfg = workspace.getConfiguration("yayamlls");
   const opts: Record<string, unknown> = {
     catalog: cfg.get<boolean>("catalog", true),
     schemas: cfg.get<object>("schemas", {}),
@@ -45,7 +45,7 @@ function initializationOptions(flatePath: string | undefined) {
 
 /** Resolve the flate binary for Flux rendering, downloading it if enabled. */
 async function resolveFlate(storageDir: string): Promise<string | undefined> {
-  const cfg = workspace.getConfiguration("yamlls");
+  const cfg = workspace.getConfiguration("yayamlls");
   if (!cfg.get<boolean>("flate.enabled", true)) {
     return undefined;
   }
@@ -63,18 +63,18 @@ async function resolveFlate(storageDir: string): Promise<string | undefined> {
     );
   } catch (err) {
     // Rendering is optional; degrade gracefully if flate can't be fetched.
-    output.appendLine(`yamlls: flate unavailable, rendering disabled (${err})`);
+    output.appendLine(`yayamlls: flate unavailable, rendering disabled (${err})`);
     return undefined;
   }
 }
 
 async function resolveCommand(storageDir: string): Promise<string> {
-  const cfg = workspace.getConfiguration("yamlls");
+  const cfg = workspace.getConfiguration("yayamlls");
   const override = cfg.get<string>("path", "").trim();
   if (override) {
     return override;
   }
-  return ensureBinary(storageDir, YAMLLS_REPO, "yamlls", cfg.get<string>("version", "latest"), output);
+  return ensureBinary(storageDir, YAMLLS_REPO, "yayamlls", cfg.get<string>("version", "latest"), output);
 }
 
 async function startClient(context: ExtensionContext): Promise<void> {
@@ -90,34 +90,34 @@ async function startClient(context: ExtensionContext): Promise<void> {
   const clientOptions: LanguageClientOptions = {
     documentSelector: [{ scheme: "file", language: "yaml" }],
     initializationOptions: initializationOptions(flatePath),
-    synchronize: { configurationSection: "yamlls" },
+    synchronize: { configurationSection: "yayamlls" },
     outputChannel: output,
   };
-  client = new LanguageClient("yamlls", "yamlls", serverOptions, clientOptions);
+  client = new LanguageClient("yayamlls", "yayamlls", serverOptions, clientOptions);
   await client.start();
 }
 
 export async function activate(context: ExtensionContext): Promise<void> {
-  output = window.createOutputChannel("yamlls");
+  output = window.createOutputChannel("yayamlls");
   context.subscriptions.push(output);
 
   context.subscriptions.push(
-    commands.registerCommand("yamlls.restart", async () => {
+    commands.registerCommand("yayamlls.restart", async () => {
       await client?.stop();
       client = undefined;
       await startClient(context).catch((err) =>
-        window.showErrorMessage(`yamlls failed to start: ${err}`),
+        window.showErrorMessage(`yayamlls failed to start: ${err}`),
       );
     }),
-    // The server exposes yamlls.showRendered as an executeCommand; forward the
+    // The server exposes yayamlls.showRendered as an executeCommand; forward the
     // active document URI as its single argument.
-    commands.registerCommand("yamlls.showRendered", async () => {
+    commands.registerCommand("yayamlls.showRendered", async () => {
       const uri = window.activeTextEditor?.document.uri.toString();
       if (!uri || !client) {
         return;
       }
       const rendered = await client.sendRequest("workspace/executeCommand", {
-        command: "yamlls.showRendered",
+        command: "yayamlls.showRendered",
         arguments: [uri],
       });
       if (typeof rendered === "string") {
@@ -130,7 +130,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
   try {
     await startClient(context);
   } catch (err) {
-    window.showErrorMessage(`yamlls failed to start: ${err}`);
+    window.showErrorMessage(`yayamlls failed to start: ${err}`);
   }
 }
 

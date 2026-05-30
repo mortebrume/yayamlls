@@ -13,10 +13,10 @@ metadata:
 	if len(got) != 2 {
 		t.Fatalf("expected 2 lenses (view + diff), got %d", len(got))
 	}
-	if got[0].Command.Command != "yamlls.showRendered" {
-		t.Errorf("first lens command = %q, want yamlls.showRendered", got[0].Command.Command)
+	if got[0].Command.Command != "yayamlls.showRendered" {
+		t.Errorf("first lens command = %q, want yayamlls.showRendered", got[0].Command.Command)
 	}
-	if got[1].Command.Command != "yamlls.showRenderedDiff" {
+	if got[1].Command.Command != "yayamlls.showRenderedDiff" {
 		t.Errorf("second lens command = %q", got[1].Command.Command)
 	}
 }

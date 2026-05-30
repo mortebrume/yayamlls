@@ -1,5 +1,5 @@
 [package]
-name = "zed-yamlls"
+name = "zed-yayamlls"
 version = "0.1.0"
 edition = "2021"
 publish = false

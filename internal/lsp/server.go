@@ -4,17 +4,17 @@ import (
 	"encoding/json"
 	"sync"
 
-	"github.com/home-operations/yamlls/internal/config"
-	"github.com/home-operations/yamlls/internal/diagnostics"
-	"github.com/home-operations/yamlls/internal/document"
-	"github.com/home-operations/yamlls/internal/lint"
-	"github.com/home-operations/yamlls/internal/render"
-	"github.com/home-operations/yamlls/internal/schema"
+	"github.com/home-operations/yayamlls/internal/config"
+	"github.com/home-operations/yayamlls/internal/diagnostics"
+	"github.com/home-operations/yayamlls/internal/document"
+	"github.com/home-operations/yayamlls/internal/lint"
+	"github.com/home-operations/yayamlls/internal/render"
+	"github.com/home-operations/yayamlls/internal/schema"
 	"github.com/tliron/glsp"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )
 
-const lsName = "yamlls"
+const lsName = "yayamlls"
 
 type Server struct {
 	docs     *document.Store
@@ -36,7 +36,7 @@ type Server struct {
 	connMu     sync.Mutex
 	connNotify glsp.NotifyFunc
 
-	// settings is the effective merge; workspaceSettings (from .yamlls.yaml)
+	// settings is the effective merge; workspaceSettings (from .yayamlls.yaml)
 	// is the lowest-precedence layer and overrides holds initializationOptions
 	// + didChangeConfiguration. Tracking the layers separately lets a
 	// workspace-folder change reload the file layer without discarding the
@@ -113,7 +113,7 @@ func (s *Server) initialize(ctx *glsp.Context, params *protocol.InitializeParams
 		ws, err = config.LoadFromWorkspace(root)
 		if err != nil {
 			notifyShowMessage(ctx, protocol.MessageTypeWarning,
-				"yamlls: failed to load .yamlls.yaml: "+err.Error())
+				"yayamlls: failed to load .yayamlls.yaml: "+err.Error())
 		}
 	}
 	s.settingsMu.Lock()
@@ -177,7 +177,7 @@ func (s *Server) applyLayers() {
 	s.renderer.Configure(effective.Renderers)
 }
 
-// setWorkspaceLayer replaces the .yamlls.yaml layer (e.g. after a
+// setWorkspaceLayer replaces the .yayamlls.yaml layer (e.g. after a
 // workspace-folder change) while preserving the override layer.
 func (s *Server) setWorkspaceLayer(ws config.Settings) {
 	s.settingsMu.Lock()

@@ -6,7 +6,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/home-operations/yamlls/internal/render"
+	"github.com/home-operations/yayamlls/internal/render"
 	"github.com/tliron/glsp"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )
@@ -62,7 +62,7 @@ func TestSettings_OverridesSurviveWorkspaceFolderChange(t *testing.T) {
 	// Adding a workspace folder must not discard that override.
 	if err := s.didChangeWorkspaceFolders(rec.ctx(), &protocol.DidChangeWorkspaceFoldersParams{
 		Event: protocol.WorkspaceFoldersChangeEvent{
-			Added: []protocol.WorkspaceFolder{{URI: "file:///tmp/yamlls-test-ws"}},
+			Added: []protocol.WorkspaceFolder{{URI: "file:///tmp/yayamlls-test-ws"}},
 		},
 	}); err != nil {
 		t.Fatalf("didChangeWorkspaceFolders: %v", err)

@@ -49,7 +49,7 @@ func TestEmbeddedYamllsSchema_LoadsAndCompiles(t *testing.T) {
 
 func TestResolver_RecognizesYamllsConfigPath(t *testing.T) {
 	r := NewResolver()
-	if got := r.Resolve("", "/repo/.yamlls.yaml"); got != EmbeddedYamllsSchemaURL {
+	if got := r.Resolve("", "/repo/.yayamlls.yaml"); got != EmbeddedYamllsSchemaURL {
 		t.Errorf("got %q, want %q", got, EmbeddedYamllsSchemaURL)
 	}
 	if got := r.Resolve("", "/repo/other.yaml"); got == EmbeddedYamllsSchemaURL {

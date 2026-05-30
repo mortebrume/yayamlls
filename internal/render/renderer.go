@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	yaml "github.com/goccy/go-yaml"
-	"github.com/home-operations/yamlls/internal/yamlast"
+	"github.com/home-operations/yayamlls/internal/yamlast"
 )
 
 // ErrRendererUnavailable signals that a renderer's external tool is not

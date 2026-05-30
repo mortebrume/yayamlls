@@ -5,7 +5,7 @@ use zed_extension_api::{
     LanguageServerId, Os, Result,
 };
 
-const REPO: &str = "home-operations/yamlls";
+const REPO: &str = "home-operations/yayamlls";
 
 struct YamllsExtension {
     /// Cached path to the downloaded binary, so we don't re-check the release
@@ -20,7 +20,7 @@ impl YamllsExtension {
         worktree: &zed::Worktree,
     ) -> Result<String> {
         // 1. Explicit override: settings.json "binary": { "path": "..." }.
-        if let Ok(lsp) = LspSettings::for_worktree("yamlls", worktree) {
+        if let Ok(lsp) = LspSettings::for_worktree("yayamlls", worktree) {
             if let Some(path) = lsp.binary.and_then(|b| b.path) {
                 return Ok(path);
             }
@@ -56,7 +56,7 @@ impl YamllsExtension {
             .ok_or_else(|| format!("no release asset named {asset} in {}", release.version))?;
 
         // GoReleaser archives carry the bare binary at the archive root.
-        let version_dir = format!("yamlls-{}", release.version);
+        let version_dir = format!("yayamlls-{}", release.version);
         let binary = format!("{version_dir}/{}", binary_name(os));
 
         if !fs::metadata(&binary).is_ok_and(|m| m.is_file()) {
@@ -72,7 +72,7 @@ impl YamllsExtension {
                 for entry in entries.flatten() {
                     let name = entry.file_name();
                     let name = name.to_string_lossy();
-                    if name.starts_with("yamlls-") && name != version_dir.as_str() {
+                    if name.starts_with("yayamlls-") && name != version_dir.as_str() {
                         fs::remove_dir_all(entry.path()).ok();
                     }
                 }
@@ -110,7 +110,7 @@ impl zed::Extension for YamllsExtension {
     ) -> Result<Option<zed::serde_json::Value>> {
         // Forward the user's "initialization_options" block verbatim; the server
         // accepts schemas / catalog / catalogUrl / kubernetes / renderers.
-        Ok(LspSettings::for_worktree("yamlls", worktree)
+        Ok(LspSettings::for_worktree("yayamlls", worktree)
             .ok()
             .and_then(|s| s.initialization_options))
     }
@@ -118,8 +118,8 @@ impl zed::Extension for YamllsExtension {
 
 fn binary_name(os: Os) -> &'static str {
     match os {
-        Os::Windows => "yamlls.exe",
-        _ => "yamlls",
+        Os::Windows => "yayamlls.exe",
+        _ => "yayamlls",
     }
 }
 
@@ -130,7 +130,7 @@ fn archive_kind(os: Os) -> DownloadedFileType {
     }
 }
 
-/// Mirrors the GoReleaser asset names: yamlls_{version}_{os}_{arch}.{ext}
+/// Mirrors the GoReleaser asset names: yayamlls_{version}_{os}_{arch}.{ext}
 fn asset_name(version: &str, os: Os, arch: Architecture) -> Result<String> {
     let os_part = match os {
         Os::Mac => "darwin",
@@ -140,13 +140,13 @@ fn asset_name(version: &str, os: Os, arch: Architecture) -> Result<String> {
     let arch_part = match arch {
         Architecture::Aarch64 => "arm64",
         Architecture::X8664 => "amd64",
-        Architecture::X86 => return Err("yamlls has no 32-bit (x86) build".into()),
+        Architecture::X86 => return Err("yayamlls has no 32-bit (x86) build".into()),
     };
     if os == Os::Windows && arch == Architecture::Aarch64 {
-        return Err("yamlls has no windows/arm64 build".into());
+        return Err("yayamlls has no windows/arm64 build".into());
     }
     let ext = if os == Os::Windows { "zip" } else { "tar.gz" };
-    Ok(format!("yamlls_{version}_{os_part}_{arch_part}.{ext}"))
+    Ok(format!("yayamlls_{version}_{os_part}_{arch_part}.{ext}"))
 }
 
 zed::register_extension!(YamllsExtension);

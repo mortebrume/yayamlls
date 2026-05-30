@@ -8,14 +8,14 @@ import (
 
 // Suppression directives, recognised as the first token of a YAML comment.
 const (
-	directiveDisableLine = "yamlls-disable-line"
-	directiveDisableFile = "yamlls-disable-file"
-	directiveDisable     = "yamlls-disable"
-	directiveEnable      = "yamlls-enable"
+	directiveDisableLine = "yayamlls-disable-line"
+	directiveDisableFile = "yayamlls-disable-file"
+	directiveDisable     = "yayamlls-disable"
+	directiveEnable      = "yayamlls-enable"
 )
 
 // Suppressor reports which document lines have diagnostics suppressed via
-// yamlls-disable directives in YAML comments.
+// yayamlls-disable directives in YAML comments.
 type Suppressor struct {
 	fileWide bool
 	lines    map[uint32]bool
@@ -39,11 +39,11 @@ func (s Suppressor) Filter(diags []protocol.Diagnostic) []protocol.Diagnostic {
 	return out
 }
 
-// ParseSuppressions scans text for yamlls-disable directives in comments:
+// ParseSuppressions scans text for yayamlls-disable directives in comments:
 //
-//   - "# yamlls-disable-file" anywhere suppresses the whole file.
-//   - "# yamlls-disable" / "# yamlls-enable" bracket a suppressed block.
-//   - "# yamlls-disable-line" suppresses its own line when trailing a value,
+//   - "# yayamlls-disable-file" anywhere suppresses the whole file.
+//   - "# yayamlls-disable" / "# yayamlls-enable" bracket a suppressed block.
+//   - "# yayamlls-disable-line" suppresses its own line when trailing a value,
 //     or the following line when alone on its own line.
 func ParseSuppressions(text string) Suppressor {
 	s := Suppressor{lines: map[uint32]bool{}}

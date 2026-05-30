@@ -22,7 +22,7 @@ func TestMultiDocMixedKinds(t *testing.T) {
   schemaUrl: "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/master-standalone-strict/{kindLower}-{groupFirstSeg}{version}.json"
 catalog: false
 `
-	if err := os.WriteFile(filepath.Join(root, ".yamlls.yaml"), []byte(cfg), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(root, ".yayamlls.yaml"), []byte(cfg), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	docPath := filepath.Join(root, "manifests.yaml")

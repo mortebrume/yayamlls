@@ -51,13 +51,13 @@ jobs:
         run: npm run compile
 
       - name: Package VSIX
-        run: npx --yes @vscode/vsce package --out yamlls.vsix
+        run: npx --yes @vscode/vsce package --out yayamlls.vsix
 
       - name: Upload artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: yamlls-vsix
-          path: editors/vscode/yamlls.vsix
+          name: yayamlls-vsix
+          path: editors/vscode/yayamlls.vsix
           if-no-files-found: error
 
       - name: Attach to release
@@ -65,7 +65,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name }}
-        run: gh release upload "$TAG" yamlls.vsix --clobber --repo "$GITHUB_REPOSITORY"
+        run: gh release upload "$TAG" yayamlls.vsix --clobber --repo "$GITHUB_REPOSITORY"
 
   zed:
     name: Build Zed Extension
@@ -88,13 +88,13 @@ jobs:
         run: cargo build --release --locked --target wasm32-wasip1
 
       - name: Stage wasm
-        run: cp target/wasm32-wasip1/release/zed_yamlls.wasm zed-yamlls.wasm
+        run: cp target/wasm32-wasip1/release/zed_yayamlls.wasm zed-yayamlls.wasm
 
       - name: Upload artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: zed-yamlls-wasm
-          path: editors/zed/zed-yamlls.wasm
+          name: zed-yayamlls-wasm
+          path: editors/zed/zed-yayamlls.wasm
           if-no-files-found: error
 
       - name: Attach to release
@@ -102,4 +102,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name }}
-        run: gh release upload "$TAG" zed-yamlls.wasm --clobber --repo "$GITHUB_REPOSITORY"
+        run: gh release upload "$TAG" zed-yayamlls.wasm --clobber --repo "$GITHUB_REPOSITORY"

@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/home-operations/yamlls/internal/render"
-	"github.com/home-operations/yamlls/internal/render/flate"
+	"github.com/home-operations/yayamlls/internal/render"
+	"github.com/home-operations/yayamlls/internal/render/flate"
 )
 
 // Run with -race: Render (pipeline goroutine) and Configure (LSP request

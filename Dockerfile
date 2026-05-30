@@ -6,10 +6,10 @@ RUN apk add --no-cache ca-certificates upx
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . ./
-RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/yamlls ./cmd/yamlls
-RUN upx --best --lzma /out/yamlls
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/yayamlls ./cmd/yayamlls
+RUN upx --best --lzma /out/yayamlls
 
 FROM scratch
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=build /out/yamlls /yamlls
-ENTRYPOINT ["/yamlls"]
+COPY --from=build /out/yayamlls /yayamlls
+ENTRYPOINT ["/yayamlls"]

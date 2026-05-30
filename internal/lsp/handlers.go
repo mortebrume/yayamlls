@@ -3,26 +3,26 @@ package lsp
 import (
 	"encoding/json"
 
-	"github.com/home-operations/yamlls/internal/actions"
-	"github.com/home-operations/yamlls/internal/completion"
-	"github.com/home-operations/yamlls/internal/config"
-	"github.com/home-operations/yamlls/internal/document"
-	"github.com/home-operations/yamlls/internal/folding"
-	"github.com/home-operations/yamlls/internal/hover"
-	"github.com/home-operations/yamlls/internal/lens"
-	"github.com/home-operations/yamlls/internal/links"
-	"github.com/home-operations/yamlls/internal/render"
-	"github.com/home-operations/yamlls/internal/symbols"
-	fileuri "github.com/home-operations/yamlls/internal/uri"
-	"github.com/home-operations/yamlls/internal/yamlast"
+	"github.com/home-operations/yayamlls/internal/actions"
+	"github.com/home-operations/yayamlls/internal/completion"
+	"github.com/home-operations/yayamlls/internal/config"
+	"github.com/home-operations/yayamlls/internal/document"
+	"github.com/home-operations/yayamlls/internal/folding"
+	"github.com/home-operations/yayamlls/internal/hover"
+	"github.com/home-operations/yayamlls/internal/lens"
+	"github.com/home-operations/yayamlls/internal/links"
+	"github.com/home-operations/yayamlls/internal/render"
+	"github.com/home-operations/yayamlls/internal/symbols"
+	fileuri "github.com/home-operations/yayamlls/internal/uri"
+	"github.com/home-operations/yayamlls/internal/yamlast"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"github.com/tliron/glsp"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )
 
 const (
-	CommandShowRendered     = "yamlls.showRendered"
-	CommandShowRenderedDiff = "yamlls.showRenderedDiff"
+	CommandShowRendered     = "yayamlls.showRendered"
+	CommandShowRenderedDiff = "yayamlls.showRenderedDiff"
 
 	resultKeyYAML = "yaml"
 )

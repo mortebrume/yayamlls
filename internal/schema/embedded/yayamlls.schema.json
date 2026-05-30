@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "embedded://yamlls/yamlls.schema.json",
-  "title": "yamlls workspace configuration",
-  "description": "Schema for .yamlls.yaml at the repo root.",
+  "$id": "embedded://yayamlls/yayamlls.schema.json",
+  "title": "yayamlls workspace configuration",
+  "description": "Schema for .yayamlls.yaml at the repo root.",
   "type": "object",
   "additionalProperties": false,
   "properties": {

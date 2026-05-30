@@ -1,14 +1,14 @@
 ---
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 version: 2
-project_name: yamlls
+project_name: yayamlls
 
 before:
   hooks:
     - go mod tidy
 
 builds:
-  - id: yamlls
+  - id: yayamlls
     env:
       - CGO_ENABLED=0
     flags:
@@ -25,13 +25,13 @@ builds:
     ignore:
       - goos: windows
         goarch: arm64
-    main: ./cmd/yamlls/main.go
-    binary: yamlls
+    main: ./cmd/yayamlls/main.go
+    binary: yayamlls
 
 archives:
-  - id: yamlls
+  - id: yayamlls
     ids:
-      - yamlls
+      - yayamlls
     format_overrides:
       - goos: windows
         formats:
@@ -63,24 +63,24 @@ signs:
     output: true
 
 homebrew_casks:
-  - name: yamlls
+  - name: yayamlls
     ids:
-      - yamlls
+      - yayamlls
     binaries:
-      - yamlls
+      - yayamlls
     repository:
       owner: home-operations
       name: homebrew-tap
       branch: main
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
-    homepage: https://github.com/home-operations/yamlls
+    homepage: https://github.com/home-operations/yayamlls
     description: YAML language server with pluggable rendering for Flux sources.
     # Binaries aren't notarized — strip the quarantine bit so macOS doesn't
     # block the first run with "developer cannot be verified".
     hooks:
       post:
         install: |
-          system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/yamlls"] if OS.mac?
+          system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/yayamlls"] if OS.mac?
 
 # release-please creates the GitHub Release with the changelog; goreleaser
 # attaches binaries/sboms/sigs to it.

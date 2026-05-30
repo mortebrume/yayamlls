@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/goccy/go-yaml/ast"
-	"github.com/home-operations/yamlls/internal/config"
+	"github.com/home-operations/yayamlls/internal/config"
 )
 
 // Resolver picks the file-level schema URL for a document: modeline,

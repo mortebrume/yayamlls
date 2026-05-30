@@ -1,13 +1,13 @@
 {
-  "name": "yamlls",
-  "displayName": "yamlls",
+  "name": "yayamlls",
+  "displayName": "yayamlls",
   "description": "YAML language server in Go: schema-driven diagnostics, completion, hover, and Flux rendering.",
   "version": "0.1.0",
   "publisher": "home-operations",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/home-operations/yamlls",
+    "url": "https://github.com/home-operations/yayamlls",
     "directory": "editors/vscode"
   },
   "engines": {
@@ -26,67 +26,67 @@
     ],
     "commands": [
       {
-        "command": "yamlls.showRendered",
-        "title": "yamlls: Show Rendered Output"
+        "command": "yayamlls.showRendered",
+        "title": "yayamlls: Show Rendered Output"
       },
       {
-        "command": "yamlls.restart",
-        "title": "yamlls: Restart Language Server"
+        "command": "yayamlls.restart",
+        "title": "yayamlls: Restart Language Server"
       }
     ],
     "configuration": {
-      "title": "yamlls",
+      "title": "yayamlls",
       "properties": {
-        "yamlls.path": {
+        "yayamlls.path": {
           "type": "string",
           "default": "",
-          "markdownDescription": "Absolute path to a `yamlls` binary. When set, the extension uses it instead of downloading a release."
+          "markdownDescription": "Absolute path to a `yayamlls` binary. When set, the extension uses it instead of downloading a release."
         },
-        "yamlls.version": {
+        "yayamlls.version": {
           "type": "string",
           "default": "latest",
           "description": "Release tag to download (e.g. \"0.0.5\"), or \"latest\"."
         },
-        "yamlls.catalog": {
+        "yayamlls.catalog": {
           "type": "boolean",
           "default": true,
           "description": "Enable JSON Schema Store catalog lookups."
         },
-        "yamlls.catalogUrl": {
+        "yayamlls.catalogUrl": {
           "type": "string",
           "default": "",
           "description": "Override the schema catalog URL."
         },
-        "yamlls.schemas": {
+        "yayamlls.schemas": {
           "type": "object",
           "default": {},
-          "markdownDescription": "Map of schema URI/path → array of file globs. Mirrors the `schemas:` block in `.yamlls.yaml`."
+          "markdownDescription": "Map of schema URI/path → array of file globs. Mirrors the `schemas:` block in `.yayamlls.yaml`."
         },
-        "yamlls.kubernetes.schemaUrl": {
+        "yayamlls.kubernetes.schemaUrl": {
           "type": "string",
           "default": "",
           "markdownDescription": "Override the Kubernetes auto-detect URL template. Placeholders: `{group}`, `{groupSeg}`, `{kind}`, `{kindLower}`, `{version}`, `{versionLower}`, …"
         },
-        "yamlls.flate.enabled": {
+        "yayamlls.flate.enabled": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "Download [`flate`](https://github.com/home-operations/flate) and enable Flux `HelmRelease` / `Kustomization` rendering."
         },
-        "yamlls.flate.path": {
+        "yayamlls.flate.path": {
           "type": "string",
           "default": "",
           "markdownDescription": "Absolute path to a `flate` binary. When set, skips the download."
         },
-        "yamlls.flate.version": {
+        "yayamlls.flate.version": {
           "type": "string",
           "default": "latest",
           "description": "flate release tag to download (e.g. \"0.1.32\"), or \"latest\"."
         },
-        "yamlls.trace.server": {
+        "yayamlls.trace.server": {
           "type": "string",
           "enum": ["off", "messages", "verbose"],
           "default": "off",
-          "description": "Trace LSP traffic between VS Code and yamlls."
+          "description": "Trace LSP traffic between VS Code and yayamlls."
         }
       }
     }

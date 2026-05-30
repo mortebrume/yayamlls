@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/home-operations/yamlls/internal/actions"
-	"github.com/home-operations/yamlls/internal/diagnostics"
+	"github.com/home-operations/yayamlls/internal/actions"
+	"github.com/home-operations/yayamlls/internal/diagnostics"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )

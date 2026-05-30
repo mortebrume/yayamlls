@@ -1,4 +1,4 @@
-module github.com/home-operations/yamlls
+module github.com/home-operations/yayamlls
 
 go 1.26.3
 

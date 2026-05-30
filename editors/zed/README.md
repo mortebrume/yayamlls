@@ -1,6 +1,6 @@
-# yamlls for Zed
+# yayamlls for Zed
 
-Registers [`yamlls`](https://github.com/home-operations/yamlls) as a language
+Registers [`yayamlls`](https://github.com/home-operations/yayamlls) as a language
 server for Zed's built-in YAML language. The extension downloads the release
 binary matching your OS/arch on first use.
 
@@ -10,16 +10,16 @@ Zed → command palette → **zed: install dev extension**, then select this
 directory. Zed compiles the Rust crate to WASM (`wasm32-wasip1`) for you; you
 only need the toolchain installed (`rustup target add wasm32-wasip1`).
 
-## Make yamlls the only YAML server
+## Make yayamlls the only YAML server
 
-Zed bundles `yaml-language-server`. To run `yamlls` instead, in
+Zed bundles `yaml-language-server`. To run `yayamlls` instead, in
 `~/.config/zed/settings.json`:
 
 ```jsonc
 {
   "languages": {
     "YAML": {
-      "language_servers": ["yamlls", "!yaml-language-server"]
+      "language_servers": ["yayamlls", "!yaml-language-server"]
     }
   }
 }
@@ -27,15 +27,15 @@ Zed bundles `yaml-language-server`. To run `yamlls` instead, in
 
 ## Configuration
 
-Pass server options under the `yamlls` LSP key; they are forwarded verbatim as
+Pass server options under the `yayamlls` LSP key; they are forwarded verbatim as
 `initializationOptions`:
 
 ```jsonc
 {
   "lsp": {
-    "yamlls": {
+    "yayamlls": {
       "binary": {
-        "path": "/usr/local/bin/yamlls"   // optional: skip the download
+        "path": "/usr/local/bin/yayamlls"   // optional: skip the download
       },
       "initialization_options": {
         "catalog": true,

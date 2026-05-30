@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/home-operations/yamlls/internal/diagnostics"
-	"github.com/home-operations/yamlls/internal/schema"
+	"github.com/home-operations/yayamlls/internal/diagnostics"
+	"github.com/home-operations/yayamlls/internal/schema"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )

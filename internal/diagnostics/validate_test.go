@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/home-operations/yamlls/internal/diagnostics"
-	"github.com/home-operations/yamlls/internal/schema"
-	"github.com/home-operations/yamlls/internal/yamlast"
+	"github.com/home-operations/yayamlls/internal/diagnostics"
+	"github.com/home-operations/yayamlls/internal/schema"
+	"github.com/home-operations/yayamlls/internal/yamlast"
 )
 
 func TestValidate_TypeMismatchProducesDiagnostic(t *testing.T) {

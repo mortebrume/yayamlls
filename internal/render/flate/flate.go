@@ -13,7 +13,7 @@ import (
 
 	yaml "github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/parser"
-	"github.com/home-operations/yamlls/internal/render"
+	"github.com/home-operations/yayamlls/internal/render"
 )
 
 const providerName = "flate"

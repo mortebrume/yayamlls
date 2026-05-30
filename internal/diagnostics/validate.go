@@ -7,12 +7,12 @@ import (
 	"strings"
 
 	"github.com/goccy/go-yaml/ast"
-	"github.com/home-operations/yamlls/internal/yamlast"
+	"github.com/home-operations/yayamlls/internal/yamlast"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )
 
-const Source = "yamlls"
+const Source = "yayamlls"
 
 func Validate(parsed *yamlast.Parsed, sch *jsonschema.Schema) []protocol.Diagnostic {
 	if parsed == nil {
