@@ -108,6 +108,9 @@ func (s *Server) initialize(ctx *glsp.Context, params *protocol.InitializeParams
 	caps.ExecuteCommandProvider = &protocol.ExecuteCommandOptions{
 		Commands: []string{CommandShowRendered, CommandShowRenderedDiff},
 	}
+	caps.CodeActionProvider = &protocol.CodeActionOptions{
+		CodeActionKinds: []protocol.CodeActionKind{protocol.CodeActionKindQuickFix},
+	}
 
 	root := pickWorkspaceRoot(params)
 	var (
