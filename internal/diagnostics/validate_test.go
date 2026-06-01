@@ -9,7 +9,7 @@ import (
 	"github.com/home-operations/yayamlls/internal/diagnostics"
 	"github.com/home-operations/yayamlls/internal/schema"
 	"github.com/home-operations/yayamlls/internal/yamlast"
-	"github.com/santhosh-tekuri/jsonschema/v5"
+	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 
 // hostnamePatternSchema is a minimal schema with the Gateway API hostname
@@ -27,9 +27,13 @@ const hostnamePatternSchema = `{
 
 func compileInlineSchema(t *testing.T, body string) *jsonschema.Schema {
 	t.Helper()
+	doc, err := jsonschema.UnmarshalJSON(strings.NewReader(body))
+	if err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
 	c := jsonschema.NewCompiler()
-	c.Draft = jsonschema.Draft2020
-	if err := c.AddResource("mem://test.json", strings.NewReader(body)); err != nil {
+	c.DefaultDraft(jsonschema.Draft2020)
+	if err := c.AddResource("mem://test.json", doc); err != nil {
 		t.Fatalf("add resource: %v", err)
 	}
 	sch, err := c.Compile("mem://test.json")

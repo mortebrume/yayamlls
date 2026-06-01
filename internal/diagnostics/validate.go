@@ -8,9 +8,14 @@ import (
 
 	"github.com/goccy/go-yaml/ast"
 	"github.com/home-operations/yayamlls/internal/yamlast"
-	"github.com/santhosh-tekuri/jsonschema/v5"
+	"github.com/santhosh-tekuri/jsonschema/v6"
+	"github.com/santhosh-tekuri/jsonschema/v6/kind"
 	protocol "github.com/tliron/glsp/protocol_3_16"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
+
+var errPrinter = message.NewPrinter(language.English)
 
 const Source = "yayamlls"
 
@@ -94,15 +99,15 @@ func flattenValidationError(
 	var walk func(e *jsonschema.ValidationError)
 	walk = func(e *jsonschema.ValidationError) {
 		if len(e.Causes) == 0 {
-			if opts.FluxSubstitutions && keywordOf(e.KeywordLocation) == "pattern" {
-				if v, ok := yamlast.StringValueAt(doc, e.InstanceLocation); ok && strings.Contains(v, "${") {
+			if opts.FluxSubstitutions && keyword(e) == "pattern" {
+				if v, ok := yamlast.StringValueAt(doc, Pointer(e.InstanceLocation)); ok && strings.Contains(v, "${") {
 					return
 				}
 			}
 			out = append(out, protocol.Diagnostic{
 				Severity: ptr(protocol.DiagnosticSeverityError),
 				Source:   ptr(Source),
-				Message:  fmt.Sprintf("%s (at %s)", e.Message, displayPointer(e.InstanceLocation)),
+				Message:  fmt.Sprintf("%s (at %s)", Message(e), displayPointer(Pointer(e.InstanceLocation))),
 				Range:    leafRange(doc, e, src),
 				Data:     dataFor(e),
 			})
@@ -121,40 +126,22 @@ func flattenValidationError(
 // a parent object — which would anchor on the object's first child. Steer them
 // to the offending key (additionalProperties) or the owning key (required).
 func leafRange(doc *ast.DocumentNode, e *jsonschema.ValidationError, src string) protocol.Range {
-	switch keywordOf(e.KeywordLocation) {
+	loc := Pointer(e.InstanceLocation)
+	switch keyword(e) {
 	case "additionalProperties":
-		if name, ok := additionalPropName(e.Message); ok {
-			if r, ok := yamlast.LocateKey(doc, e.InstanceLocation, name, src); ok {
+		if k, ok := e.ErrorKind.(*kind.AdditionalProperties); ok && len(k.Properties) > 0 {
+			if r, ok := yamlast.LocateKey(doc, loc, k.Properties[0], src); ok {
 				return r
 			}
 		}
 	case "required":
-		if parent, key := splitPointer(e.InstanceLocation); key != "" {
+		if parent, key := splitPointer(loc); key != "" {
 			if r, ok := yamlast.LocateKey(doc, parent, yamlast.UnescapePointerSegment(key), src); ok {
 				return r
 			}
 		}
 	}
-	return yamlast.LocateRange(doc, e.InstanceLocation, src)
-}
-
-// additionalPropName extracts the first offending property from an
-// "additionalProperties 'x', 'y' not allowed" message.
-func additionalPropName(msg string) (string, bool) {
-	rest, found := strings.CutPrefix(msg, "additionalProperties ")
-	if !found {
-		return "", false
-	}
-	a := strings.IndexByte(rest, '\'')
-	if a < 0 {
-		return "", false
-	}
-	rest = rest[a+1:]
-	b := strings.IndexByte(rest, '\'')
-	if b < 0 {
-		return "", false
-	}
-	return rest[:b], true
+	return yamlast.LocateRange(doc, loc, src)
 }
 
 // splitPointer splits a JSON pointer into its parent pointer and last segment.
@@ -167,26 +154,44 @@ func splitPointer(ptr string) (parent, key string) {
 }
 
 func dataFor(e *jsonschema.ValidationError) any {
-	kind := keywordOf(e.KeywordLocation)
-	if kind == "" {
+	k := keyword(e)
+	if k == "" {
 		return nil
 	}
-	return CauseData{Kind: kind, InstanceLocation: e.InstanceLocation}
+	return CauseData{Kind: k, InstanceLocation: Pointer(e.InstanceLocation)}
 }
 
-func KeywordOf(p string) string { return keywordOf(p) }
+// Message renders a validation error's text.
+func Message(e *jsonschema.ValidationError) string {
+	return e.ErrorKind.LocalizedString(errPrinter)
+}
 
-// keywordOf returns the last segment of a JSON-Pointer keyword location.
-func keywordOf(p string) string {
-	if p == "" {
+// Pointer renders a v6 instance location as a JSON Pointer string.
+func Pointer(loc []string) string {
+	var b strings.Builder
+	for _, seg := range loc {
+		b.WriteByte('/')
+		b.WriteString(escapePointerSegment(seg))
+	}
+	return b.String()
+}
+
+func escapePointerSegment(s string) string {
+	s = strings.ReplaceAll(s, "~", "~0")
+	return strings.ReplaceAll(s, "/", "~1")
+}
+
+// Keyword returns the JSON Schema keyword that produced the error.
+func Keyword(e *jsonschema.ValidationError) string {
+	return keyword(e)
+}
+
+func keyword(e *jsonschema.ValidationError) string {
+	kp := e.ErrorKind.KeywordPath()
+	if len(kp) == 0 {
 		return ""
 	}
-	for i := len(p) - 1; i >= 0; i-- {
-		if p[i] == '/' {
-			return p[i+1:]
-		}
-	}
-	return p
+	return kp[0]
 }
 
 func displayPointer(p string) string {
