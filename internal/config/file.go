@@ -109,7 +109,19 @@ func Merge(base, override Settings) Settings {
 		out.CatalogURL = override.CatalogURL
 	}
 	if override.Kubernetes != nil {
-		out.Kubernetes = override.Kubernetes
+		// Field-merge so a partial override (e.g. only schemaUrl) doesn't drop
+		// a base enabled flag. Copy first: out.Kubernetes aliases base's.
+		merged := KubernetesSettings{}
+		if out.Kubernetes != nil {
+			merged = *out.Kubernetes
+		}
+		if override.Kubernetes.Enabled != nil {
+			merged.Enabled = override.Kubernetes.Enabled
+		}
+		if override.Kubernetes.SchemaURL != "" {
+			merged.SchemaURL = override.Kubernetes.SchemaURL
+		}
+		out.Kubernetes = &merged
 	}
 	if override.Renderers != nil {
 		if out.Renderers == nil {

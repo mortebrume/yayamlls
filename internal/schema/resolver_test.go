@@ -10,7 +10,7 @@ func TestResolver_ModelineBeatsSettings(t *testing.T) {
 	r := NewResolver()
 	r.SetSettings(config.Settings{
 		Schemas: map[string][]string{"./glob.json": {"**/*.yaml"}},
-		Catalog: ptrBool(false),
+		Catalog: new(false),
 	})
 
 	got := r.Resolve("# yaml-language-server: $schema=./modeline.json\nx: 1\n", "/tmp/a.yaml")
@@ -23,7 +23,7 @@ func TestResolver_SettingsGlobMatch(t *testing.T) {
 	r := NewResolver()
 	r.SetSettings(config.Settings{
 		Schemas: map[string][]string{"./k8s.json": {"k8s/**/*.yaml"}},
-		Catalog: ptrBool(false),
+		Catalog: new(false),
 	})
 
 	got := r.Resolve("apiVersion: v1\n", "/repo/k8s/dev/app.yaml")
@@ -36,4 +36,18 @@ func TestResolver_SettingsGlobMatch(t *testing.T) {
 	}
 }
 
-func ptrBool(b bool) *bool { return &b }
+func TestResolver_K8sURLGatedByEnabled(t *testing.T) {
+	gvk := GVK{Group: "apps", Version: "v1", Kind: "Deployment"}
+	r := NewResolver()
+
+	// Default (no block) is enabled.
+	r.SetSettings(config.Settings{})
+	if got := r.K8sURL(gvk); got == "" {
+		t.Errorf("expected a URL by default, got empty")
+	}
+
+	r.SetSettings(config.Settings{Kubernetes: &config.KubernetesSettings{Enabled: new(false)}})
+	if got := r.K8sURL(gvk); got != "" {
+		t.Errorf("expected empty when kubernetes.enabled is false, got %q", got)
+	}
+}

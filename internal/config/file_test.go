@@ -51,13 +51,12 @@ func TestLoadFile_AbsentReturnsZero(t *testing.T) {
 func TestMerge_OverrideWins(t *testing.T) {
 	base := Settings{
 		Schemas:   map[string][]string{"a.json": {"a"}},
-		Catalog:   ptrBool(true),
+		Catalog:   new(true),
 		Renderers: map[string]json.RawMessage{"flate": json.RawMessage(`{"binary":"x"}`)},
 	}
-	overrideTrue := false
 	override := Settings{
 		Schemas:   map[string][]string{"b.json": {"b"}},
-		Catalog:   &overrideTrue,
+		Catalog:   new(false),
 		Renderers: map[string]json.RawMessage{"flate": json.RawMessage(`{"binary":"y"}`)},
 	}
 	got := Merge(base, override)
@@ -95,4 +94,41 @@ func TestMerge_CarriesKubernetes(t *testing.T) {
 	}
 }
 
-func ptrBool(b bool) *bool { return &b }
+func TestMerge_KubernetesFieldMerge(t *testing.T) {
+	// A workspace opt-out must survive an override that only sets schemaUrl.
+	base := Settings{Kubernetes: &KubernetesSettings{Enabled: new(false)}}
+	override := Settings{Kubernetes: &KubernetesSettings{SchemaURL: "https://mirror/{kindLower}.json"}}
+	got := Merge(base, override)
+	if got.Kubernetes.Enabled == nil || *got.Kubernetes.Enabled {
+		t.Errorf("enabled:false dropped by partial override: %+v", got.Kubernetes)
+	}
+	if got.Kubernetes.SchemaURL != "https://mirror/{kindLower}.json" {
+		t.Errorf("schemaUrl not merged: %+v", got.Kubernetes)
+	}
+	// Merge must not mutate base's pointee.
+	if base.Kubernetes.SchemaURL != "" {
+		t.Errorf("Merge mutated base: %+v", base.Kubernetes)
+	}
+}
+
+func TestKubernetesEnabled(t *testing.T) {
+	cases := []struct {
+		name string
+		s    *Settings
+		want bool
+	}{
+		{"nil settings", nil, true},
+		{"no block", &Settings{}, true},
+		{"block, enabled unset", &Settings{Kubernetes: &KubernetesSettings{SchemaURL: "x"}}, true},
+		{"enabled true", &Settings{Kubernetes: &KubernetesSettings{Enabled: new(true)}}, true},
+		{"enabled false", &Settings{Kubernetes: &KubernetesSettings{Enabled: new(false)}}, false},
+		{"enabled false with schemaUrl", &Settings{Kubernetes: &KubernetesSettings{Enabled: new(false), SchemaURL: "x"}}, false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := tc.s.KubernetesEnabled(); got != tc.want {
+				t.Errorf("KubernetesEnabled() = %v, want %v", got, tc.want)
+			}
+		})
+	}
+}

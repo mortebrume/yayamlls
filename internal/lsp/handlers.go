@@ -151,6 +151,9 @@ func (s *Server) codeAction(ctx *glsp.Context, params *protocol.CodeActionParams
 }
 
 func (s *Server) codeLens(ctx *glsp.Context, params *protocol.CodeLensParams) ([]protocol.CodeLens, error) {
+	if !s.kubernetesEnabled() {
+		return nil, nil
+	}
 	d, ok := s.docs.Get(params.TextDocument.URI)
 	if !ok {
 		return nil, nil
@@ -159,6 +162,9 @@ func (s *Server) codeLens(ctx *glsp.Context, params *protocol.CodeLensParams) ([
 }
 
 func (s *Server) executeCommand(ctx *glsp.Context, params *protocol.ExecuteCommandParams) (any, error) {
+	if !s.kubernetesEnabled() {
+		return nil, nil
+	}
 	s.captureNotify(ctx)
 	var kind string
 	switch params.Command {
@@ -203,6 +209,9 @@ func commandURIArg(params *protocol.ExecuteCommandParams) string {
 }
 
 func (s *Server) scheduleRenderForURI(uri string) {
+	if !s.kubernetesEnabled() {
+		return
+	}
 	d, ok := s.docs.Get(uri)
 	if !ok {
 		return
@@ -253,8 +262,10 @@ func (s *Server) didChangeConfig(ctx *glsp.Context, params *protocol.DidChangeCo
 
 func (s *Server) publishDiagnostics(ctx *glsp.Context, d *document.Document) {
 	s.captureNotify(ctx)
-	if src := render.AnalyzeDocument(d.URI, uriToPath(d.URI), d.Text); src != nil {
-		s.pipeline.Schedule(src)
+	if s.kubernetesEnabled() {
+		if src := render.AnalyzeDocument(d.URI, uriToPath(d.URI), d.Text); src != nil {
+			s.pipeline.Schedule(src)
+		}
 	}
 	s.schedulePublish(d)
 }

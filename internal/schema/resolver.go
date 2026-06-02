@@ -135,10 +135,14 @@ func (r *Resolver) K8sURLForNode(body ast.Node) string {
 
 func (r *Resolver) K8sURL(gvk GVK) string {
 	r.mu.RLock()
+	enabled := r.settings.KubernetesEnabled()
 	tmpl := ""
 	if r.settings.Kubernetes != nil {
 		tmpl = r.settings.Kubernetes.SchemaURL
 	}
 	r.mu.RUnlock()
+	if !enabled {
+		return ""
+	}
 	return BuildK8sURL(tmpl, gvk.Group, gvk.Version, gvk.Kind)
 }

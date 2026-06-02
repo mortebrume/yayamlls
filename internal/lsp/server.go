@@ -110,6 +110,14 @@ func New(version string, registry *render.Registry) *Server {
 
 func (s *Server) Handler() *protocol.Handler { return s.handler }
 
+// kubernetesEnabled gates the code-lens and render paths, which don't go
+// through the resolver.
+func (s *Server) kubernetesEnabled() bool {
+	s.settingsMu.Lock()
+	defer s.settingsMu.Unlock()
+	return s.settings.KubernetesEnabled()
+}
+
 func (s *Server) initialize(ctx *glsp.Context, params *protocol.InitializeParams) (any, error) {
 	caps := s.handler.CreateServerCapabilities()
 	change := protocol.TextDocumentSyncKindIncremental

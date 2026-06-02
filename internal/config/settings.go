@@ -15,6 +15,9 @@ type Settings struct {
 }
 
 type KubernetesSettings struct {
+	// Enabled gates apiVersion+kind detection and Flux rendering. nil (unset)
+	// is enabled; set false to run as a generic YAML language server.
+	Enabled *bool `json:"enabled,omitempty"`
 	// SchemaURL templates per-document apiVersion+kind auto-detect.
 	// See schema.BuildK8sURL for supported placeholders.
 	SchemaURL string `json:"schemaUrl,omitempty"`
@@ -41,6 +44,14 @@ func (s *Settings) CustomTagNames() []string {
 		return nil
 	}
 	return s.CustomTags
+}
+
+// KubernetesEnabled treats nil (unset) as enabled.
+func (s *Settings) KubernetesEnabled() bool {
+	if s == nil || s.Kubernetes == nil || s.Kubernetes.Enabled == nil {
+		return true
+	}
+	return *s.Kubernetes.Enabled
 }
 
 func Parse(raw json.RawMessage) (Settings, error) {

@@ -16,6 +16,14 @@ default `kubernetes.schemaUrl` is
 `https://k8s-schemas.home-operations.com/{groupSeg}{kindLower}_{versionLower}.json`;
 override in `.yayamlls.yaml` to point elsewhere. 404s are silently skipped.
 
+Kubernetes support — apiVersion+kind detection, Flux rendering, and code
+lenses — is on by default. Disable it to run as a generic YAML language server:
+
+```yaml
+kubernetes:
+  enabled: false
+```
+
 ## vs. redhat/yaml-language-server
 
 |                                                | yayamlls                          | redhat/yaml-language-server                                 |
@@ -24,7 +32,7 @@ override in `.yayamlls.yaml` to point elsewhere. 404s are silently skipped.
 | Diagnostics, completion, hover                 | yes                               | yes                                                         |
 | Symbols, folding, links, code actions          | yes                               | yes                                                         |
 | Code lens                                      | rendered output, diff             | none                                                        |
-| Kubernetes auto-detect                         | URL template from apiVersion+kind | `yaml.kubernetesCRDStore` ([datreeio/CRDs-catalog][datree]) |
+| Kubernetes auto-detect                         | URL template from apiVersion+kind (toggleable) | `yaml.kubernetesCRDStore` ([datreeio/CRDs-catalog][datree]) |
 | Workspace config file                          | `.yayamlls.yaml`                  | editor settings only                                        |
 | Flux `HelmRelease` / `Kustomization` rendering | via [flate][flate]                | no                                                          |
 | Pluggable renderers (`kustomize`, `helm`, …)   | config-declared subprocess        | no                                                          |
@@ -180,10 +188,12 @@ schemas:
 catalog: true
 catalogUrl: ""
 
-# Optional. Override the URL template for Kubernetes auto-detect.
-# Placeholders: {group}, {groupSeg}, {groupFirst}, {groupFirstSeg},
-# {kind}, {kindLower}, {version}, {versionLower}.
+# Optional. Kubernetes apiVersion+kind auto-detect (on by default). Set
+# enabled: false to run as a generic YAML language server. schemaUrl overrides
+# the lookup template; placeholders: {group}, {groupSeg}, {groupFirst},
+# {groupFirstSeg}, {kind}, {kindLower}, {version}, {versionLower}.
 # kubernetes:
+#   enabled: false
 #   schemaUrl: "https://schemas.example.com/{groupSeg}{kindLower}_{versionLower}.json"
 
 # Optional. Defaults shown.

@@ -9,12 +9,15 @@ schemas:
 catalog: true
 # catalogUrl: ""   # override the schemastore.org endpoint
 
-# Override the Kubernetes auto-detect URL template. Placeholders:
-# {group}, {groupSeg}, {groupFirst}, {groupFirstSeg}, {kind}, {kindLower},
-# {version}, {versionLower}.
+# Kubernetes/Flux support (apiVersion+kind schema auto-detect, Flux rendering)
+# is on by default. Set enabled: false to run as a generic YAML language server.
 #
 # kubernetes:
-#   schemaUrl: "https://schemas.example.com/{groupSeg}{kindLower}_{versionLower}.json"
+#   enabled: false
+#   # Override the auto-detect URL template. Placeholders:
+#   # {group}, {groupSeg}, {groupFirst}, {groupFirstSeg}, {kind}, {kindLower},
+#   # {version}, {versionLower}.
+#   # schemaUrl: "https://schemas.example.com/{groupSeg}{kindLower}_{versionLower}.json"
 
 # Per-renderer config. Defaults shown — only set when overriding.
 #

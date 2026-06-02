@@ -91,6 +91,43 @@ func TestSettings_OverridesSurviveWorkspaceFolderChange(t *testing.T) {
 	}
 }
 
+func TestCodeLens_GatedByKubernetesEnabled(t *testing.T) {
+	rec := &recorder{}
+	ctx := rec.ctx()
+	s := New("test", render.NewRegistry())
+	uri := "file:///tmp/ks.yaml"
+	body := "apiVersion: kustomize.toolkit.fluxcd.io/v1\nkind: Kustomization\nmetadata:\n  name: app\n"
+
+	if err := s.didOpen(ctx, &protocol.DidOpenTextDocumentParams{
+		TextDocument: protocol.TextDocumentItem{URI: uri, LanguageID: testLangID, Version: 1, Text: body},
+	}); err != nil {
+		t.Fatalf("didOpen: %v", err)
+	}
+
+	// Default: autodetect on, so a Flux doc gets render lenses.
+	lenses, err := s.codeLens(ctx, &protocol.CodeLensParams{TextDocument: protocol.TextDocumentIdentifier{URI: uri}})
+	if err != nil {
+		t.Fatalf("codeLens: %v", err)
+	}
+	if len(lenses) == 0 {
+		t.Fatalf("expected lenses for a Flux doc by default, got none")
+	}
+
+	// Disabling kubernetes suppresses the lenses entirely.
+	if err := s.didChangeConfig(ctx, &protocol.DidChangeConfigurationParams{
+		Settings: map[string]any{"kubernetes": map[string]any{"enabled": false}},
+	}); err != nil {
+		t.Fatalf("didChangeConfig: %v", err)
+	}
+	lenses, err = s.codeLens(ctx, &protocol.CodeLensParams{TextDocument: protocol.TextDocumentIdentifier{URI: uri}})
+	if err != nil {
+		t.Fatalf("codeLens: %v", err)
+	}
+	if len(lenses) != 0 {
+		t.Fatalf("expected no lenses when kubernetes.enabled is false, got %d", len(lenses))
+	}
+}
+
 func TestDiagnostics_ReloadOnWholeChange(t *testing.T) {
 	ml := schemaModeline(t)
 	rec := &recorder{}

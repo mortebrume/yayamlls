@@ -24,8 +24,12 @@
     "kubernetes": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Tuning for per-document Kubernetes apiVersion+kind auto-detect.",
+      "description": "Kubernetes apiVersion+kind schema auto-detect and Flux rendering.",
       "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable Kubernetes support. Default: true; set false to run as a generic YAML language server."
+        },
         "schemaUrl": {
           "type": "string",
           "description": "URL template for Kubernetes schema lookup. Placeholders: {group}, {groupSeg}, {groupFirst}, {groupFirstSeg}, {kind}, {kindLower}, {version}, {versionLower}."
