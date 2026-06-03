@@ -73,8 +73,6 @@ jobs:
     defaults:
       run:
         working-directory: editors/zed
-    permissions:
-      contents: write # upload the .wasm to the release
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -84,22 +82,7 @@ jobs:
       - name: Add wasm target
         run: rustup target add wasm32-wasip1
 
+      # Zed and Gram compile the extension locally at install time, so there is
+      # no prebuilt .wasm to release; this just verifies the crate still builds.
       - name: Build
         run: cargo build --release --locked --target wasm32-wasip1
-
-      - name: Stage wasm
-        run: cp target/wasm32-wasip1/release/zed_yayamlls.wasm zed-yayamlls.wasm
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: zed-yayamlls-wasm
-          path: editors/zed/zed-yayamlls.wasm
-          if-no-files-found: error
-
-      - name: Attach to release
-        if: github.event_name == 'release'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.event.release.tag_name }}
-        run: gh release upload "$TAG" zed-yayamlls.wasm --clobber --repo "$GITHUB_REPOSITORY"

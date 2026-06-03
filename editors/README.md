@@ -20,7 +20,8 @@ yayamlls_{version}_{os}_{arch}.zip      # windows
 
 **Gram** is a Zed fork that installs Zed extensions, so point it at [`zed/`](./zed)
 via **Install Local**; it compiles to WASM locally and needs a WASM-capable Rust
-toolchain. See the top-level [README](../README.md#gram).
+toolchain (`wasm32-wasip2`, vs. Zed's `wasm32-wasip1`). See the top-level
+[README](../README.md#gram).
 
 For editors with built-in LSP support (Neovim, Helix) you don't need an
 extension; see the "Editor setup" section of the top-level [README](../README.md).

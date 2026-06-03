@@ -10,6 +10,11 @@ Zed → command palette → **zed: install dev extension**, then select this
 directory. Zed compiles the Rust crate to WASM (`wasm32-wasip1`) for you; you
 only need the toolchain installed (`rustup target add wasm32-wasip1`).
 
+> [!NOTE]
+> [Gram](../../README.md#gram), a Zed fork, installs this same extension but
+> compiles to `wasm32-wasip2` instead. If you use both editors, install both
+> targets — they coexist fine.
+
 ## Make yayamlls the only YAML server
 
 Zed bundles `yaml-language-server`. To run `yayamlls` instead, in
