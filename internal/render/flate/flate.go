@@ -23,7 +23,7 @@ type Renderer struct {
 	disabled bool
 	resolved string // cached exec.LookPath result for the current Binary
 	looked   bool   // whether resolution has been attempted for current Binary
-	root     string // configured build path (--path); empty = build the file's own dir
+	root     string // configured build path (--path); empty = use the workspace root
 	wsRoot   string // workspace root, to anchor a relative root
 }
 
@@ -148,31 +148,29 @@ func subcommandFor(doc *render.SourceDocument) (sub string, err error) {
 	}
 }
 
-// buildArgs assembles the flate argv. A configured build path scans from that
-// root and selects the resource by metadata.name, so a source defined in
-// another directory resolves; without it, the document's own directory builds.
-// A nil result means skip: a root is set but no name is known yet.
+// buildArgs assembles the flate argv: scope by metadata.name and build from the
+// Flux entry path (configured path, else the workspace root). A nil result means
+// skip, since no name is known yet.
 func (r *Renderer) buildArgs(sub string, doc *render.SourceDocument) ([]string, error) {
-	if root := r.targetRoot(); root != "" {
-		if doc.Name == "" {
-			return nil, nil
-		}
-		return []string{"build", sub, doc.Name, "--path", root, "-o", "yaml"}, nil
+	root := r.targetRoot()
+	if root == "" {
+		return nil, errors.New("flate needs a configured path or workspace root")
 	}
-	if doc.Path == "" {
-		return nil, errors.New("flate needs an on-disk file path")
+	if doc.Name == "" {
+		return nil, nil
 	}
-	return []string{"build", sub, "--path", filepath.Dir(doc.Path), "-o", "yaml"}, nil
+	return []string{"build", sub, doc.Name, "--path", root, "-o", "yaml"}, nil
 }
 
-// targetRoot resolves the configured build path; a relative one anchors at the
-// workspace root. Empty when no path is configured.
+// targetRoot resolves the Flux entry path flate builds from: the configured
+// path (a relative one anchors at the workspace root), falling back to the
+// workspace root itself. Empty only when neither is set.
 func (r *Renderer) targetRoot() string {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	switch {
 	case r.root == "":
-		return ""
+		return r.wsRoot
 	case filepath.IsAbs(r.root), r.wsRoot == "":
 		return r.root
 	default:

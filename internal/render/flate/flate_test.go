@@ -183,11 +183,13 @@ spec:
 	stub := writeStub(t, rendered)
 
 	r := &flate.Renderer{Binary: stub}
+	r.SetWorkspaceRoot("/repo")
 	src := &render.SourceDocument{
-		URI:      "file:///tmp/hr.yaml",
-		Path:     "/tmp/hr.yaml",
+		URI:      "file:///repo/hr.yaml",
+		Path:     "/repo/hr.yaml",
 		Kind:     "HelmRelease",
 		APIGroup: "helm.toolkit.fluxcd.io/v2beta2",
+		Name:     "foo",
 	}
 
 	out, err := r.Render(context.Background(), src)
@@ -211,10 +213,12 @@ spec:
 
 func TestFlate_MissingBinaryGivesActionableError(t *testing.T) {
 	r := &flate.Renderer{Binary: "/no/such/path/flate-does-not-exist"}
+	r.SetWorkspaceRoot("/repo")
 	src := &render.SourceDocument{
-		Path:     "/tmp/hr.yaml",
+		Path:     "/repo/hr.yaml",
 		Kind:     "HelmRelease",
 		APIGroup: "helm.toolkit.fluxcd.io/v2",
+		Name:     "frigate",
 	}
 	_, err := r.Render(context.Background(), src)
 	if err == nil {

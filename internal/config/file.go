@@ -120,6 +120,9 @@ func Merge(base, override Settings) Settings {
 	if override.FluxSubstitutions != nil {
 		out.FluxSubstitutions = override.FluxSubstitutions
 	}
+	if override.RenderDebounceMs != nil {
+		out.RenderDebounceMs = override.RenderDebounceMs
+	}
 	if override.CustomTags != nil {
 		out.CustomTags = unionStrings(out.CustomTags, override.CustomTags)
 	}

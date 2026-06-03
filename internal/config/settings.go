@@ -9,6 +9,10 @@ type Settings struct {
 	Kubernetes        *KubernetesSettings        `json:"kubernetes,omitempty"`
 	Renderers         map[string]json.RawMessage `json:"renderers,omitempty"`
 	FluxSubstitutions *bool                      `json:"fluxSubstitutions,omitempty"`
+	// RenderDebounceMs is the debounce, in milliseconds, before a document
+	// change triggers a renderer (e.g. flate). Unset or non-positive uses the
+	// built-in default.
+	RenderDebounceMs *int `json:"renderDebounceMs,omitempty"`
 	// CustomTags lists YAML tags (e.g. "!Ref", "!vault scalar") whose values
 	// an external tool resolves; nodes carrying them skip schema validation.
 	CustomTags []string `json:"customTags,omitempty"`

@@ -191,15 +191,19 @@ catalogUrl: ""
 #   flate:
 #     enabled: true
 #     binary: flate
-#     # Scan from this path instead of the edited file's directory, so a
-#     # HelmRelease can resolve a source defined elsewhere. Output is scoped
-#     # to the edited resource by metadata.name. Relative to workspace root.
+#     # Narrow the Flux entry flate builds from (defaults to the workspace
+#     # root), so a HelmRelease resolves a source defined elsewhere. Output is
+#     # scoped to the edited resource by metadata.name. Relative to workspace root.
 #     path: kubernetes
 #   # Declare your own renderer for any kind by shelling out to a command.
 #   # No recompile needed — flate is just the built-in version of this.
 #   kustomize:
 #     match: { kind: Kustomization, group: kustomize.toolkit.fluxcd.io }
 #     command: ["kustomize", "build", "{dir}"]
+
+# Optional. Debounce (ms) before a document change triggers a renderer.
+# Default: 750.
+# renderDebounceMs: 750
 
 # Optional. YAML tags resolved by an external tool (Flux, CloudFormation,
 # Vault, …). Nodes carrying one skip schema validation, since the value
@@ -209,10 +213,11 @@ catalogUrl: ""
 #   - "!vault"
 ```
 
-By default `flate` renders the edited file's own directory, which fails when a
-`HelmRelease` references a source (such as an `OCIRepository`) defined
-elsewhere. Set `renderers.flate.path` (typically your cluster root) and
-`flate` follows Flux's `spec.path` references to resolve those dependencies.
+By default `flate` builds from the workspace root, following Flux's `spec.path`
+references to resolve sources (such as an `OCIRepository`) defined elsewhere and
+scoping the build to the edited resource's `metadata.name`. Set
+`renderers.flate.path` (typically your cluster root) to point at a narrower Flux
+entry; relative paths anchor at the workspace root.
 
 ### Custom renderers
 
