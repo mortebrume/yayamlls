@@ -4,7 +4,6 @@ import {
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
-  TransportKind,
 } from "vscode-languageclient/node";
 import { ensureBinary } from "./download";
 
@@ -83,9 +82,10 @@ async function startClient(context: ExtensionContext): Promise<void> {
 
   const command = await resolveCommand(storageDir);
   const flatePath = await resolveFlate(storageDir);
+  // No transport: stdio is the default. Setting it makes the client append a
+  // `--stdio` arg the server's flag parser rejects.
   const serverOptions: ServerOptions = {
     command,
-    transport: TransportKind.stdio,
   };
   const clientOptions: LanguageClientOptions = {
     documentSelector: [{ scheme: "file", language: "yaml" }],
@@ -101,6 +101,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
   output = window.createOutputChannel("yayamlls");
   context.subscriptions.push(output);
 
+  // showRendered/showRenderedDiff are auto-registered from the server's
+  // executeCommand capabilities; registering them here too would collide.
   context.subscriptions.push(
     commands.registerCommand("yayamlls.restart", async () => {
       await client?.stop();
@@ -108,22 +110,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
       await startClient(context).catch((err) =>
         window.showErrorMessage(`yayamlls failed to start: ${err}`),
       );
-    }),
-    // The server exposes yayamlls.showRendered as an executeCommand; forward the
-    // active document URI as its single argument.
-    commands.registerCommand("yayamlls.showRendered", async () => {
-      const uri = window.activeTextEditor?.document.uri.toString();
-      if (!uri || !client) {
-        return;
-      }
-      const rendered = await client.sendRequest("workspace/executeCommand", {
-        command: "yayamlls.showRendered",
-        arguments: [uri],
-      });
-      if (typeof rendered === "string") {
-        const doc = await workspace.openTextDocument({ language: "yaml", content: rendered });
-        await window.showTextDocument(doc, { preview: true });
-      }
     }),
   );
 
