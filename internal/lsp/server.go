@@ -3,6 +3,7 @@ package lsp
 import (
 	"encoding/json"
 	"sync"
+	"time"
 
 	"github.com/home-operations/yayamlls/internal/config"
 	"github.com/home-operations/yayamlls/internal/diagnostics"
@@ -209,6 +210,11 @@ func (s *Server) applyLayers() {
 	s.resolver.SetSettings(effective)
 	s.renderer.SetWorkspaceRoot(uriToPath(s.workspaceRoot))
 	s.renderer.Configure(effective.Renderers)
+	debounce := render.DefaultDebounce
+	if ms := effective.RenderDebounceMs; ms != nil && *ms > 0 {
+		debounce = time.Duration(*ms) * time.Millisecond
+	}
+	s.pipeline.SetDebounce(debounce)
 }
 
 // setWorkspaceLayer replaces the .yayamlls.yaml layer (e.g. after a

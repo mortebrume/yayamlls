@@ -132,3 +132,17 @@ func TestKubernetesEnabled(t *testing.T) {
 		})
 	}
 }
+func TestMerge_CarriesRenderDebounce(t *testing.T) {
+	ms := 1500
+	base := Settings{}
+	override := Settings{RenderDebounceMs: &ms}
+	got := Merge(base, override)
+	if got.RenderDebounceMs == nil || *got.RenderDebounceMs != 1500 {
+		t.Errorf("override renderDebounceMs dropped: %+v", got.RenderDebounceMs)
+	}
+	// An override that omits the field must not clear a base value.
+	keep := Merge(Settings{RenderDebounceMs: &ms}, Settings{})
+	if keep.RenderDebounceMs == nil || *keep.RenderDebounceMs != 1500 {
+		t.Errorf("base renderDebounceMs cleared by empty override: %+v", keep.RenderDebounceMs)
+	}
+}

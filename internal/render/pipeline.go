@@ -8,6 +8,9 @@ import (
 	"time"
 )
 
+// DefaultDebounce is the render debounce applied when none is configured.
+const DefaultDebounce = 750 * time.Millisecond
+
 type Pipeline struct {
 	registry *Registry
 	sink     Sink
@@ -42,13 +45,17 @@ func NewPipeline(reg *Registry, sink Sink) *Pipeline {
 	return &Pipeline{
 		registry: reg,
 		sink:     sink,
-		debounce: 750 * time.Millisecond,
+		debounce: DefaultDebounce,
 		pending:  make(map[string]*pending),
 		cache:    make(map[string]cacheEntry),
 	}
 }
 
-func (p *Pipeline) SetDebounce(d time.Duration) { p.debounce = d }
+func (p *Pipeline) SetDebounce(d time.Duration) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.debounce = d
+}
 
 func (p *Pipeline) Schedule(doc *SourceDocument) {
 	if doc == nil {
